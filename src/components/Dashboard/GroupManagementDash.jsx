@@ -12,7 +12,8 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
-import Json from "../../Json/Data.json"
+import { useDispatch, useSelector } from "react-redux";
+import { fetchGroup } from "../../redux/authSlice";
 
 
 
@@ -33,7 +34,21 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
     const [imagePreview, setImagePreview] = useState(''); // State for image preview
     const [imagePreviewProfile, setImagePreviewProfile] = useState('');
     const [columns, setColumns] = useState([]);
-    const tableData = Json;
+    const dispatch = useDispatch();
+    const groupState = useSelector((state) => state.group);
+    const tableData = groupState.group
+    useEffect(() => {
+        dispatch(fetchGroup());
+    }, [dispatch]);
+
+    const [formData, setFormData] = useState({
+        organizationCode: '',
+        organizationType: '',
+        organizationName: '',
+        vhost: '',
+        orgVisibility: '',
+        publicVisibility: ''
+    });
 
     const rowsPerPage = 5;
     const totalPages = Math.ceil(tableData.length / rowsPerPage);
@@ -89,27 +104,97 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
 
     const handleMenuItemClick = (action, rowId) => {
         if (action === 'Send Sandes Message') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpen(true); // Open the drawer when "Send Sandes Message" is clicked
         }
         if (action === "Profile Photo") {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenProfile(true);
         }
         if (action === 'View') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenDetails(true);
         }
         if (action === 'Edit') {
+            if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenEdit(true);
         }
         if (action === 'Cover Image') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenCover(true);
         }
         if (action === 'Disperse Group') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenGroup(true);
         }
         if (action === 'Change OU') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenOU(true);
         }
-        console.log(`Action: ${action} for Row ID: ${rowId}`);
+        // console.log(`Action: ${action} for Row ID: ${rowId}`);
         handlePopoverClose();
     };
 
@@ -251,27 +336,27 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                         <hr />
                         <ListItem
                             button
-                            onClick={() => handleMenuItemClick('View')}
+                            onClick={() => handleMenuItemClick('View', selectedRowId)}
                         >
                             <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faMagnifyingGlass} />  <ListItemText primary="View" />
                         </ListItem>
                         <ListItem
                             button
-                            onClick={() => handleMenuItemClick('Edit')}
+                            onClick={() => handleMenuItemClick('Edit', selectedRowId)}
                         >
                             <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faPenToSquare} />  <ListItemText primary="Edit" />
                         </ListItem>
 
                         <ListItem
                             button
-                            onClick={() => handleMenuItemClick('Profile Photo')}
+                            onClick={() => handleMenuItemClick('Profile Photo', selectedRowId)}
                         >
                             <FontAwesomeIcon className='mr-1' style={{ color: "green" }} icon={faCamera} />  <ListItemText primary="Profile Photo" />
                         </ListItem>
                         <ListItem
                             button
 
-                            onClick={() => handleMenuItemClick('Cover Image')}
+                            onClick={() => handleMenuItemClick('Cover Image', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faImage} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Cover Image" />
                         </ListItem>
@@ -280,7 +365,7 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                             button
                             component="a"
                             href="/GroupAddMemebr"
-                            onClick={() => handleMenuItemClick('Add Member')}
+                            onClick={() => handleMenuItemClick('Add Member', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faUsersLine} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Add Member" />
                         </ListItem>
@@ -288,7 +373,7 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                             button
                             // component="a"
                             // href="/MemberPage"
-                            onClick={() => handleMenuItemClick('Manage Members')}
+                            onClick={() => handleMenuItemClick('Manage Members', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faRightFromBracket} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Manage Members" />
                         </ListItem>
@@ -296,19 +381,19 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                         <ListItem
                             button
 
-                            onClick={() => handleMenuItemClick('Disperse Group')}
+                            onClick={() => handleMenuItemClick('Disperse Group', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faRecycle} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Disperse Group" />
                         </ListItem>
                         <ListItem
                             button
 
-                            onClick={() => handleMenuItemClick('Change OU')}
+                            onClick={() => handleMenuItemClick('Change OU', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faRecycle} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Change OU" />
                         </ListItem>
 
-                        <ListItem button onClick={() => handleMenuItemClick('Send Sandes Message')}>
+                        <ListItem button onClick={() => handleMenuItemClick('Send Sandes Message', selectedRowId)}>
                             <FontAwesomeIcon icon={faEnvelope} className='mr-1' style={{ color: "#158cba" }} />  <ListItemText primary="Send Sandes Message" />
                         </ListItem>
                     </List>

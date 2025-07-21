@@ -11,7 +11,6 @@ import {
 } from "react-router-dom";
 import Dashboard from "./Pages/Dashboard/Dashboard";
 import Dlinks from "./Pages/Dlinks/Dlinks";
-import APPInsights from "./Pages/APPInsights/APPInsights";
 import OrganizationUnit from "./Pages/OrganizationUnit/OrganizationUnit";
 import Designation from "./Pages/Designation/Designation";
 import LoginManagement from "./Pages/LoginManagement/LoginManagement";
@@ -26,11 +25,13 @@ import GroupAddMemebr from "./Pages/GroupAddMemebr/GroupAddMemebr";
 import OrganizationOverview from "./Pages/OrganizationOverview/OrganizationOverview";
 import MemberPage from "./Pages/MemberPage/MemberPage";
 import EmployeHeatMap from "./Pages/EmployeHeatMap/EmployeHeatMap";
+import All_modules from "./Pages/AllModules/All_modules";
 
 function App() {
   return (
     <Router>
       <Routes>
+         <Route path="/all-module" element={<All_modules />} />
         <Route path="/PercapitaStatistics" element={<PercapitaStatistics />} />
         <Route path="/DailyChat" element={<DailyChat />} />
         <Route path="/import-employees" element={<ImportEmployees />} />
@@ -45,7 +46,6 @@ function App() {
         <Route path="/organization" element={<ManageOrganization />} />
         <Route path="/organization-units" element={<OrganizationUnit />} />
         <Route path="/OrganizationOverview" element={<OrganizationOverview />} /> 
-        <Route path="/APPInsights" element={<APPInsights />} />
         <Route path="/Dlinks" element={<Dlinks />} />
         <Route path="/Dashboard" element={<Dashboard />} />
         <Route path="/LoginWeb" element={<Login />} />

@@ -13,22 +13,52 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
-import Json from "../../Json/Data.json"
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOrganization, updateOrganization } from "../../redux/authSlice";
 
 
 function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const location = useLocation();
     const permissionData = location.state?.permissionData;
-    const tableData = Json
+    const dispatch = useDispatch();
+    const organizationState = useSelector((state) => state.organization);
+
+    const tableData = organizationState.organization
+    useEffect(() => {
+        dispatch(fetchOrganization());
+    }, [dispatch]);
     const [columns, setColumns] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
     const [showSelect, setShowSelect] = useState(false);
     const [open, setOpen] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [openDel, setOpenDel] = useState(false);
-    const [age, setAge] = useState(''); // State for the dropdown (age selection)
     const [selectedRowData, setSelectedRowData] = useState(null); // Updated
     const [openNew, setOpenNew] = useState(false);
+
+
+    const handleChange = (e) => {
+        dispatch(setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        dispatch(updateOrganization({ formData, rowId: selectedRowData }))
+    };
+
+    const [formData, setFormData] = useState({
+        gu_id: '',
+        organizationCode: '',
+        organizationType: '',
+        organizationName: '',
+        vhost_id: '',
+        orgVisibility: '',
+        publicVisibility: ''
+    });
+
 
     const handlePopoverOpen = (event, rowData) => {
         setAnchorEl(event.currentTarget);
@@ -41,28 +71,64 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     };
 
     const handleMenuItemClick = (action, rowId) => {
+
         if (action === 'Send Sandes Message') {
+            if (rowId) {
+                setSelectedRowData(rowId);
+                setFormData({
+                    gu_id: rowId.gu_id || '',
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.organization_type_id || '',
+                    organizationName: rowId.o_name || '',
+                    vhost_id: rowId.vhost_id || '',
+                    orgVisibility: rowId.is_o_visibility == "true" ? 1 : 0,
+                    publicVisibility: rowId.is_public_visibility == "true" ? 1 : 0,
+
+
+                });
+            }
             setOpen(true); // Open the drawer when "Send Sandes Message" is clicked
         }
         if (action === 'Edit') {
+            if (rowId) {
+                setFormData({
+                    gu_id: rowId.gu_id || '',
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.organization_type_id || '',
+                    organizationName: rowId.o_name || '',
+                    vhost_id: rowId.vhost_id || '',
+                    orgVisibility: rowId.is_o_visibility == "true" ? 1 : 0,
+                    publicVisibility: rowId.is_public_visibility == "true" ? 1 : 0,
+
+
+                });
+            }
             setOpenEdit(true); // Open the drawer when "Send Sandes Message" is clicked
         }
         if (action === 'Delete') {
+            if (rowId) {
+                setFormData({
+                    gu_id: rowId.gu_id || '',
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.organization_type_id || '',
+                    organizationName: rowId.o_name || '',
+                    vhost_id: rowId.vhost_id || '',
+                    orgVisibility: rowId.is_o_visibility == "true" ? 1 : 0,
+                    publicVisibility: rowId.is_public_visibility == "true" ? 1 : 0,
+
+                });
+            }
             setOpenDel(true); // Open the drawer when "Send Sandes Message" is clicked
         }
 
-        console.log(`Action: ${action} for Row ID: ${selectedRowData?.id}`);
+        // console.log(`Action: ${action} for Row ID: ${selectedRowData?.id}`);
         handlePopoverClose();
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Add form submission logic here (e.g., send message)
-    };
-
-    const handleChange = (event) => {
-        setAge(event.target.value);
-    };
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     // Add form submission logic here (e.g., send message)
+    // };
 
     const toggleDrawer = (open) => () => {
         setOpen(open);
@@ -256,14 +322,14 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                         <hr />
 
                         {permissionData.edit === "active" && (
-                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Edit')}>
+                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Edit', selectedRowData)}>
                                 <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faPenToSquare} />
                                 <ListItemText primary="Edit" />
                             </ListItem>
                         )}
 
                         {permissionData.delete === "active" && (
-                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Delete')}>
+                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Delete', selectedRowData)}>
                                 <FontAwesomeIcon className='mr-1' icon={faTrash} style={{ color: "#ff0000b8" }} />
                                 <ListItemText primary="Delete" />
                             </ListItem>
@@ -275,7 +341,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                                 component="a"
                                 className='cursor-pointer'
                                 href="/DailyChat"
-                                onClick={() => handleMenuItemClick('Daily Chat Statistics')}
+                                onClick={() => handleMenuItemClick('Daily Chat Statistics', selectedRowData)}
                             >
                                 <FontAwesomeIcon icon={faCheck} className='mr-1' style={{ color: "#158cba" }} />
                                 <ListItemText primary="Daily Chat Statistics" />
@@ -288,7 +354,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                                 component="a"
                                 className='cursor-pointer'
                                 href="/PercapitaStatistics"
-                                onClick={() => handleMenuItemClick('Percapita Statistics')}
+                                onClick={() => handleMenuItemClick('Percapita Statistics', selectedRowData)}
                             >
                                 <FontAwesomeIcon icon={faPen} className='mr-1' style={{ color: "#158cba" }} />
                                 <ListItemText primary="Percapita Statistics" />
@@ -301,7 +367,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                                 component="a"
                                 className='cursor-pointer'
                                 href="/OrganizationOverview"
-                                onClick={() => handleMenuItemClick('Organization Units Wise Statistics')}
+                                onClick={() => handleMenuItemClick('Organization Units Wise Statistics', selectedRowData)}
                             >
                                 <FontAwesomeIcon icon={faCube} className='mr-1' style={{ color: "#158cba" }} />
                                 <ListItemText primary="Organization Units Wise Statistics" />
@@ -316,7 +382,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                                 component="a"
                                 href="/HeatMap"
                                 className='cursor-pointer'
-                                onClick={() => handleMenuItemClick('Top/Bottom Reports')}
+                                onClick={() => handleMenuItemClick('Top/Bottom Reports', selectedRowData)}
                             >
                                 <FontAwesomeIcon icon={faTurnDown} className='mr-1' style={{ color: "#158cba" }} />
                                 <ListItemText primary="Top/Bottom Reports" />
@@ -329,7 +395,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                                 component="a"
                                 href="/HeatMap"
                                 className='cursor-pointer'
-                                onClick={() => handleMenuItemClick('Top/Bottom Reports Single Page View')}
+                                onClick={() => handleMenuItemClick('Top/Bottom Reports Single Page View', selectedRowData)}
                             >
                                 <FontAwesomeIcon icon={faBandcamp} className='mr-1' style={{ color: "#158cba" }} />
                                 <ListItemText primary="Top/Bottom Reports Single Page View" />
@@ -369,9 +435,20 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                                         defaultValue=""
                                         label="Organization Type"
                                     >
-                                        <MenuItem value="1">One</MenuItem>
-                                        <MenuItem value="2">Two</MenuItem>
-                                        <MenuItem value="3">Three</MenuItem>
+                                        <MenuItem value="1">Ministry</MenuItem>
+                                        <MenuItem value="2">Department Under Ministry</MenuItem>
+                                        <MenuItem value="3">Attached Office </MenuItem>
+                                        <MenuItem value="4">State Government </MenuItem>
+                                        <MenuItem value="5">State Government Department </MenuItem>
+                                        <MenuItem value="6">Autonomous Bodies </MenuItem>
+                                        <MenuItem value="7">Central Offices </MenuItem>
+                                        <MenuItem value="8">Semi Government Office </MenuItem>
+                                        <MenuItem value="9">Central Public sector Unit </MenuItem>
+                                        <MenuItem value="10">Statutory/Apex Bodies </MenuItem>
+                                        <MenuItem value="11">Section 8 Company </MenuItem>
+                                        <MenuItem value="12">Section 25 Company </MenuItem>
+                                        <MenuItem value="13">Judiciary </MenuItem>
+
                                     </Select>
                                 </FormControl>
 
@@ -384,9 +461,18 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                                         defaultValue=""
                                         label="Vhost"
                                     >
-                                        <MenuItem value="1">One</MenuItem>
-                                        <MenuItem value="2">Two</MenuItem>
-                                        <MenuItem value="3">Three</MenuItem>
+                                        <MenuItem value="1">State Government-North East</MenuItem>
+                                        <MenuItem value="2">Defence</MenuItem>
+                                        <MenuItem value="3">My Bharat</MenuItem>
+                                        <MenuItem value="1">Judiciary</MenuItem>
+                                        <MenuItem value="2">State Government Western</MenuItem>
+                                        <MenuItem value="3">My Bharat</MenuItem>
+                                        <MenuItem value="1">State Government-North East</MenuItem>
+                                        <MenuItem value="2">Defence</MenuItem>
+                                        <MenuItem value="3">My Bharat</MenuItem>
+                                        <MenuItem value="1">State Government-North East</MenuItem>
+                                        <MenuItem value="2">Defence</MenuItem>
+                                        <MenuItem value="3">My Bharat</MenuItem>
                                     </Select>
                                 </FormControl>
                             </div>
@@ -444,56 +530,116 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                         <Typography variant="h5" mb={2} color='#003566' fontWeight="700">Update Organization</Typography>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form>
-
-                        <Typography variant="h6" mb={2} mt={2} textAlign="center" color='#003566'>Ministry for POC</Typography>
+                    <form onSubmit={handleSubmit}>
+                        <Typography variant="h6" mb={2} mt={2} textAlign="center" color="#003566">
+                            Ministry for POC
+                        </Typography>
 
                         <div className="row">
                             <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="Organization code" aria-label="default input example" />
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>Organization type</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="Organization name" aria-label="default input example" />
-                            </div>
-
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>Vhost</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>Organization Visibility</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>Public Visibility</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
+                                <label htmlFor="organizationCode">Organization Code</label>
+                                <input
+                                    className="form-control"
+                                    type="text"
+                                    name="organizationCode"
+                                    value={formData.organizationCode}
+                                    onChange={handleChange}
+                                    placeholder="Organization code"
+                                />
                             </div>
 
 
 
+
+                            <div className="col-md-6 mt-3">
+                                <label htmlFor="organizationType">Organization Type</label>
+                                <select
+                                    className="form-select"
+                                    name="organizationType"
+                                    value={formData.organizationType}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">Select Organization Type</option>
+                                    <option value="M">Ministry</option>
+                                    <option value="D" selected="selected">Department under Ministry</option>
+                                    <option value="A">Attached Office</option>
+                                    <option value="S">State Government</option>
+                                    <option value="G">State Government Department</option>
+                                    <option value="AU">Autonomous Bodies</option>
+                                    <option value="CO">Central Offices</option>
+                                    <option value="SG">Semi Government Office</option>
+                                    <option value="PS">Central Public Sector Unit</option>
+                                    <option value="ST">Statutory / Apex Bodies</option>
+                                    <option value="C1">Section 8 Company</option>
+                                    <option value="C2">Section 25 Company</option>
+                                    <option value="J">Judiciary</option>
+                                </select>
+                            </div>
+                            <div className="col-md-6 mt-3">
+                                <label htmlFor="organizationName">Organization Name</label>
+                                <input
+                                    className="form-control"
+                                    type="text"
+                                    name="organizationName"
+                                    value={formData.organizationName}
+                                    onChange={handleChange}
+                                    placeholder="Organization name"
+                                />
+                            </div>
+
+                            <div className="col-md-6 mt-3">
+                                <label htmlFor="vhost_id">Vhost</label>
+                                <select
+                                    className="form-select"
+                                    name="vhost_id"
+                                    value={formData.vhost_id}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">Select Vhost</option>
+                                    <option value="10">State Government-North East</option>
+                                    <option value="11">Defence </option>
+                                    <option value="13">My Bharat</option>
+                                    <option value="12">Judiciary</option>
+                                    <option value="8">State Government-Western (Gujarat, Maharastra, Dadra and Nagar Haveli, Daman and Diu, Goa)</option>
+                                    <option value="16">Public - I</option>
+                                    <option value="7">State Government-Eastern (Bihar, Jharkhand, Odisha and West Bengal)</option>
+                                    <option value="6">State Government-Central (Uttar Pradesh, Madya Pradesh, Chhattisgarh, Uttarakhand)</option>
+                                    <option value="5">State Governemnt-North (Chandigarh, Delhi, Haryana, Himachal Pradesh, Jammu and Kashmir, Ladakh, Punjab and Rajastan)</option>
+                                    <option value="3">Swachhagrahis</option>
+                                    <option value="4">State Governemnt-South (Andhra Pradesh, Karnataka, Kerala, Puducherry, Tamil Nadu, Telengana)</option>
+                                    <option value="1" selected="selected">Central Government (Civil) - I</option>
+                                </select>
+                            </div>
+                            <div className="col-md-6 mt-3">
+                                <label htmlFor="orgVisibility">Organization Visibility</label>
+                                <select
+                                    className="form-select"
+                                    name="orgVisibility"
+                                    value={formData.orgVisibility}
+                                    onChange={handleChange}
+                                >
+                                    <option>Organization Visibility</option>
+                                    <option value="1">Visible</option>
+                                    <option value="0">Invisible</option>
+                                </select>
+                            </div>
+                            <div className="col-md-6 mt-3">
+                                <label htmlFor="publicVisibility">Public Visibility</label>
+                                <select
+                                    className="form-select"
+                                    name="publicVisibility"
+                                    value={formData.publicVisibility}
+                                    onChange={handleChange}
+                                >
+                                    <option>Public Visibility</option>
+                                    <option value="1">Visible</option>
+                                    <option value="0">Invisible</option>
+                                </select>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-success m-3">Update</button>
-                        <button type="submit" class="btn btn-danger">Close</button>
+
+                        <button type="submit" className="btn btn-success m-3">Update</button>
+                        <button type="button" className="btn btn-danger">Close</button>
                     </form>
                 </div>
             </Drawer>

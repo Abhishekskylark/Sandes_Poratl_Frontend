@@ -17,12 +17,14 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
+
 function Dashboard_Admin({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const [open, setOpen] = useState(false);
     const [imagePreview, setImagePreview] = useState(null);
     const toggleDrawer = (newOpen) => () => setOpen(newOpen);
     const dispatch = useDispatch();
-    const { dashboard, loading, error } = useSelector((state) => state.auth);
+    const { dashboard, loading, error ,  user, token } = useSelector((state) => state.auth);
+    
 
     useEffect(() => {
         dispatch(fetchDashboard());
@@ -31,10 +33,10 @@ function Dashboard_Admin({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        console.log('Form Data:', {
-            name: formData.get('name'),
-            email: formData.get('email'),
-        });
+        // console.log('Form Data:', {
+        //     name: formData.get('name'),
+        //     email: formData.get('email'),
+        // });
         setOpen(false); // close after submit
     };
 
@@ -44,7 +46,6 @@ function Dashboard_Admin({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
             icon: faCube,
             label: 'Organizations Units',
             value: dashboard?.organizations ?? 0,
-            // link: '/organization',
         },
         {
             icon: faUsersLine,
@@ -98,15 +99,7 @@ function Dashboard_Admin({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                                 Dashboard
                             </Typography>
                             <div className="dash-top-btn">
-                                <Button
-                                    className="Dashbtn btn-bg-1"
-                                    variant="contained"
-                                    component={Link}
-                                    to="/APPInsights"
-                                    style={{ marginRight: "10px" }}
-                                >
-                                    <FontAwesomeIcon icon={faGlobe} className="mr-2" />APP INSIGHTS
-                                </Button>
+                             
                                 <Button className="Dashbtn btn-bg-1" variant="contained" onClick={toggleDrawer(true)}>
                                     <FontAwesomeIcon icon={faEnvelope} className="mr-2" /> BROADCAST MESSAGE
                                 </Button>

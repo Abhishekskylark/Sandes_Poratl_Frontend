@@ -15,7 +15,8 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
-import Json from "../../Json/Data.json"
+import { useDispatch, useSelector } from "react-redux";
+import { fetchEmployees } from "../../redux/authSlice";
 
 function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -27,10 +28,25 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
     const [openDel, setOpenDel] = useState(false);
     const [age, setAge] = useState(''); // State for the dropdown (age selection)
     const [imagePreview, setImagePreview] = useState(''); // State for image preview
-    const tableData = Json
     const location = useLocation();
     const permissionData = location.state?.permissionData;
     const [columns, setColumns] = useState([]);
+    const dispatch = useDispatch();
+    const employeeState = useSelector((state) => state.employee);
+    const tableData = employeeState.employees
+    useEffect(() => {
+        dispatch(fetchEmployees());
+    }, [dispatch]);
+
+    const [formData, setFormData] = useState({
+        organizationCode: '',
+        organizationType: '',
+        organizationName: '',
+        vhost: '',
+        orgVisibility: '',
+        publicVisibility: ''
+    });
+
 
     const handlePopoverOpen = (event, rowId) => {
         setAnchorEl(event.currentTarget);
@@ -44,16 +60,46 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
 
     const handleMenuItemClick = (action, rowId) => {
         if (action === 'Send Sandes Message') {
+             if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpen(true); // Open the drawer when "Send Sandes Message" is clicked
         }
         if (action === 'Edit') {
+            if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenEdit(true); // Open the drawer when "Send Sandes Message" is clicked
         }
         if (action === 'Delete') {
+             if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenDel(true); // Open the drawer when "Send Sandes Message" is clicked
         }
 
-        console.log(`Action: ${action} for Row ID: ${rowId}`);
+        // console.log(`Action: ${action} for Row ID: ${rowId}`);
         handlePopoverClose();
     };
 
@@ -186,19 +232,19 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                         <Typography margin={2} >OU for POC</Typography>
                         <hr />
                         {permissionData.send_sandes_message === "active" && (
-                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Send Sandes Message')}>
+                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Send Sandes Message', selectedRowId)}>
                                 <FontAwesomeIcon icon={faEnvelope} className='mr-1' style={{ color: "#158cba" }} />  <ListItemText primary="Send Sandes Message" />
                             </ListItem>
                         )}
                         {permissionData.edit === "active" && (
-                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Edit')}>
+                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Edit', selectedRowId)}>
                                 <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faPenToSquare} />
                                 <ListItemText primary="Edit" />
                             </ListItem>
                         )}
 
                         {permissionData.delete === "active" && (
-                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Delete')}>
+                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Delete', selectedRowId)}>
                                 <FontAwesomeIcon className='mr-1' icon={faTrash} style={{ color: "#ff0000b8" }} />
                                 <ListItemText primary="Delete" />
                             </ListItem>
@@ -212,7 +258,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                                 component="a"
                                 className='cursor-pointer'
                                 href="/MemberPage"
-                                onClick={() => handleMenuItemClick('Member wise status')}
+                                onClick={() => handleMenuItemClick('Member wise status', selectedRowId)}
                             >
                                 <FontAwesomeIcon icon={faCheck} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Member wise status" />
                             </ListItem>
@@ -224,7 +270,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                                 component="a"
                                 className='cursor-pointer'
                                 href="/HeatMap"
-                                onClick={() => handleMenuItemClick('Heat Map')}
+                                onClick={() => handleMenuItemClick('Heat Map', selectedRowId)}
                             >
                                 <FontAwesomeIcon icon={faPen} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Heat Map based on chat activity" />
                             </ListItem>

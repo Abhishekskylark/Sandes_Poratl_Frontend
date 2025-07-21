@@ -10,7 +10,8 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
 import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
-import Json from "../../Json/Data.json"
+import { useDispatch, useSelector } from "react-redux";
+import { fetchEmployees, fetchDesignation } from "../../redux/authSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLocation } from 'react-router-dom';
 
@@ -24,7 +25,24 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const [openNew, setOpenNew] = useState(false);
     const [openDel, setOpenDel] = useState(false);
     const [columns, setColumns] = useState([]);
-    const tableData = Json;
+    const dispatch = useDispatch();
+    const designationState = useSelector((state) => state.designation);
+
+    const tableData = designationState.designation
+    useEffect(() => {
+        dispatch(fetchDesignation());
+    }, [dispatch]);
+
+    const [formData, setFormData] = useState({
+        organizationCode: '',
+        organizationType: '',
+        organizationName: '',
+        vhost: '',
+        orgVisibility: '',
+        publicVisibility: ''
+    });
+
+
 
     const handlePopoverOpen = (event, rowData) => {
         setAnchorEl(event.currentTarget);
@@ -36,14 +54,34 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
         setSelectedRowData(null);
     };
 
-    const handleMenuItemClick = (action) => {
+    const handleMenuItemClick = (action, rowId) => {
         if (action === 'Edit') {
+            if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpen(true);
         }
         if (action === 'Delete') {
+            if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenDel(true);
         }
-        console.log(`Action: ${action} for Row ID: ${selectedRowData?.id}`);
+        // console.log(`Action: ${action} for Row ID: ${selectedRowData?.id}`);
         handlePopoverClose();
     };
 
@@ -152,11 +190,11 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                     <List>
                         <Typography margin={2}>DSP - Delhi Police</Typography>
                         <hr />
-                        <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Edit')}>
+                        <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Edit', selectedRowData)}>
                             <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faPenToSquare} />
                             <ListItemText primary="Edit" />
                         </ListItem>
-                        <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Delete')}>
+                        <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Delete', selectedRowData)}>
                             <FontAwesomeIcon className='mr-1' icon={faTrash} style={{ color: "#ff0000b8" }} />
                             <ListItemText primary="Delete" />
                         </ListItem>

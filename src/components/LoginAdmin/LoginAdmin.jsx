@@ -5,6 +5,9 @@
 // import { useNavigate } from 'react-router-dom';
 // import { Button } from "../ui/button";
 // import { Input } from "../ui/input";
+// import ReCAPTCHA from "react-google-recaptcha";
+
+// const RECAPTCHA_SITE_KEY = "6LfAeWsrAAAAALbUorst-4I4pqAlFsMtPv4lQYJk";
 
 // export default function LoginAdmin_Page() {
 //   const navigate = useNavigate();
@@ -168,93 +171,64 @@
 
 
 
-
-
-// import { Typography } from "@mui/material";
-// import { useState, useRef, useEffect } from "react";
-// import { toast } from "react-toastify";
-// import 'react-toastify/dist/ReactToastify.css';
-// import { useNavigate } from 'react-router-dom';
-// import { Button } from "../ui/button";
-// import { Input } from "../ui/input";
+// import React, { useState, useRef } from "react";
 // import { useDispatch, useSelector } from "react-redux";
-// import { generateOtp, verifyOtp } from "../../redux/authSlice";
+// import { useNavigate } from "react-router-dom";
+// import { toast } from "react-toastify";
+// import { loginAdmin } from "../../redux/authSlice";
+// import { Button } from "../ui/button";
+// import { Typography, TextField, CircularProgress } from "@mui/material";
+// import ReCAPTCHA from "react-google-recaptcha";
 
-// export default function LoginAdmin_Page() {
-//   const navigate = useNavigate();
+// const RECAPTCHA_SITE_KEY = "6LfAeWsrAAAAALbUorst-4I4pqAlFsMtPv4lQYJk";
+
+// export default function LoginAdmin() {
 //   const dispatch = useDispatch();
+//   const navigate = useNavigate();
+//   const [mobile, setMobile] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [captchaVerified, setCaptchaVerified] = useState(false);
+//   const { loading } = useSelector((state) => state.auth);
+//   const recaptchaRef = useRef(null);
 
-//   const [number, setNumber] = useState("");
-//   const [err, setErr] = useState({});
-//   const [otpInput, setOtpInput] = useState(new Array(5).fill(""));
-//   const inputRef = useRef([]);
-
-//   const { isOtpSent, isAuthenticated, loading, error } = useSelector((state) => state.auth);
-
-//   const handleGenerateOtp = async (e) => {
-//     e.preventDefault();
-//     let trimmed = number.trim();
-//     let validationErrors = {};
-
-//     if (!/^\d{10}$/.test(trimmed)) {
-//       validationErrors.number = "Please enter a valid 10-digit phone number";
-//     }
-
-//     if (Object.keys(validationErrors).length > 0) {
-//       setErr(validationErrors);
+//   const handleCustomLogin = async () => {
+//     if (!captchaVerified) {
+//       toast.error("Please verify the CAPTCHA first.");
 //       return;
 //     }
 
-//     setErr({});
-//     dispatch(generateOtp(trimmed))
-//       .unwrap()
-//       .then(() => toast.success("OTP sent successfully"))
-//       .catch((err) => toast.error(err));
-//   };
+//     // 👇 Get selected role silently
+//     const role = localStorage.getItem("selected_role");
 
-//   useEffect(() => {
-//     if (isOtpSent) {
-//       inputRef.current[0]?.focus();
-//     }
-//   }, [isOtpSent]);
+//     const ROLE_IDS = {
+//       "super-admin": 1,
+//       "ministry-admin": 2,
+//       "o-admin": 3,
+//       "ou-admin": 4,
+//     };
 
-//   useEffect(() => {
-//     if (isAuthenticated) {
+//     const roles_id = role ? ROLE_IDS[role.toLowerCase()] : undefined;
+
+//     const result = await dispatch(loginAdmin({ mobile, password, roles_id }));
+
+
+//     if (loginAdmin.fulfilled.match(result)) {
 //       toast.success("Login successful!");
+//       console.log("result.payload.user", result.payload.user.allRoles);
+
+//       localStorage.setItem("token", result.payload.token);
+//       localStorage.setItem("roleid", result.payload.user.roleId);
+//       localStorage.setItem("role", result.payload.user.role);
+//       localStorage.setItem("mobile", result.payload.user.username);
+//       localStorage.setItem("AllRoles", JSON.stringify(result.payload.user.allRoles));
+//       localStorage.removeItem("selected_role"); // clean up
 //       navigate("/Dashboard");
-//     }
-//   }, [isAuthenticated, navigate]);
-
-//   const handleInput = (value, index) => {
-//     if (isNaN(value)) return;
-//     const newVal = value.trim();
-//     const newArr = [...otpInput];
-//     newArr[index] = newVal.slice(-1);
-//     setOtpInput(newArr);
-//     if (newVal && index < otpInput.length - 1) {
-//       inputRef.current[index + 1]?.focus();
+//     } else {
+//       toast.error(result.payload || "Login failed");
+//       recaptchaRef.current.reset();
+//       setCaptchaVerified(false);
 //     }
 //   };
-
-//   const handleBack = (e, index) => {
-//     if (!e.target.value && e.key === "Backspace" && index > 0) {
-//       inputRef.current[index - 1]?.focus();
-//     }
-//   };
-
-//   const handleVerifyOtp = () => {
-//     const otp = otpInput.join("");
-//     if (otp.length !== 5) {
-//       toast.error("Please enter a valid 5-digit OTP");
-//       return;
-//     }
-
-//     dispatch(verifyOtp({ phone: number.trim(), otp }))
-//       .unwrap()
-//       .catch((err) => toast.error(err));
-//   };
-
-//   const isOtpComplete = otpInput.every((val) => val !== "");
 
 //   return (
 //     <div className="min-h-screen w-full px-4 py-8 flex flex-col items-center">
@@ -263,137 +237,48 @@
 //           <div className="logo_img" style={{ textAlign: "-webkit-center" }}>
 //             <img src="assets/images/sandes_logo.png" width="15%" alt="Logo" />
 //           </div>
+
 //           <Typography variant="h5" fontWeight="bold" gutterBottom textAlign="center">
 //             Sandes Authentication Admin Login
 //           </Typography>
 
-//           {isOtpSent ? (
-//             <div className="flex justify-center flex-col gap-4 items-center">
-//               <div className="bg-[#7DD0AF] p-8 rounded-2xl shadow-lg">
-//                 <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Enter OTP</h2>
-//                 <div className="flex space-x-4">
-//                   {otpInput.map((item, index) => (
-//                     <input
-//                       key={index}
-//                       ref={(input) => (inputRef.current[index] = input)}
-//                       type="text"
-//                       maxLength="1"
-//                       value={otpInput[index]}
-//                       onChange={(e) => handleInput(e.target.value, index)}
-//                       onKeyUp={(e) => handleBack(e, index)}
-//                       className="w-12 h-12 text-center text-xl font-medium text-gray-800 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
-//                       placeholder="-"
-//                     />
-//                   ))}
-//                 </div>
-//               </div>
-//               <div>
-//                 <Button
-//                   onClick={handleVerifyOtp}
-//                   disabled={!isOtpComplete || loading}
-//                   className="w-full sm:w-auto cursor-pointer bg-[#7DD0AF] font-semibold"
-//                 >
-//                   {loading ? "Verifying..." : "Verify"}
-//                 </Button>
-//               </div>
-//             </div>
-//           ) : (
-//             <>
-//               <h1 className="text-xl sm:text-2xl font-semibold text-blue-950 mb-3">
-//                 Enter your phone number
-//               </h1>
-//               <form onSubmit={handleGenerateOtp} className="space-y-4">
-//                 <Input
-//                   value={number}
-//                   onChange={(e) => setNumber(e.target.value)}
-//                   placeholder="Enter your phone number"
-//                   maxLength="10"
-//                   className="text-gray-700 font-semibold"
-//                 />
-//                 {err.number && (
-//                   <span className="text-red-500 font-medium text-sm block">{err.number}</span>
-//                 )}
-//                 <Button
-//                   type="submit"
-//                   disabled={loading}
-//                   className="w-full sm:w-auto cursor-pointer bg-[#7DD0AF] font-semibold"
-//                 >
-//                   {loading ? "Sending OTP..." : "Generate OTP"}
-//                 </Button>
-//               </form>
-//             </>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-// import { Typography } from "@mui/material";
-// import { useEffect } from "react";
-// import { toast } from "react-toastify";
-// import { useNavigate } from "react-router-dom";
-// import { Button } from "../ui/button";
-// import { useKeycloak } from "../../redux/useKeycloak";
-
-// export default function LoginAdmin_Page() {
-//   const navigate = useNavigate();
-//   const { keycloak, initialized, authenticated } = useKeycloak();
-
-//   useEffect(() => {
-//     if (initialized && authenticated) {
-//       toast.success("Already logged in!");
-//       navigate("/Dashboard");
-//     }
-//   }, [initialized, authenticated, navigate]);
-
-//   const handleLogin = () => {
-//     keycloak.login({
-//       redirectUri: window.location.origin + "/Dashboard",
-//     });
-//   };
-
-//   return (
-//     <div
-//       className="min-h-screen w-full px-4 py-8 flex flex-col items-center"
-//       style={{
-//         backgroundSize: "cover",
-//         backgroundPosition: "center",
-//         overflowX: "hidden",
-//       }}
-//     >
-//       <div className="w-full max-w-screen-sm mt-8 p-6 bg-white border border-[#168943] shadow-2xl rounded-lg text-center space-y-4">
-//         <div
-//           className="admin_form"
-//           style={{ border: "1px solid", padding: "5%", borderRadius: "10px" }}
-//         >
-//           <div className="logo_img" style={{ textAlign: "-webkit-center" }}>
-//             <img src="assets/images/sandes_logo.png" width="15%" alt="Logo" />
-//           </div>
-//           <Typography
-//             variant="h5"
-//             fontWeight="bold"
-//             gutterBottom
-//             textAlign="center"
-//           >
-//             Sandes Authentication Admin Login
-//           </Typography>
-
 //           <h1 className="text-xl sm:text-2xl font-semibold text-blue-950 mb-3">
-//             Login via Keycloak
+//             Login via Mobile Number
 //           </h1>
 
+//           <TextField
+//             fullWidth
+//             label="Mobile Number"
+//             variant="outlined"
+//             margin="normal"
+//             value={mobile}
+//             onChange={(e) => setMobile(e.target.value)}
+//           />
+//           <TextField
+//             fullWidth
+//             label="Password"
+//             type="password"
+//             variant="outlined"
+//             margin="normal"
+//             value={password}
+//             onChange={(e) => setPassword(e.target.value)}
+//           />
+
+//           <div className="my-4 flex">
+//             <ReCAPTCHA
+//               ref={recaptchaRef}
+//               sitekey={RECAPTCHA_SITE_KEY}
+//               onChange={() => setCaptchaVerified(true)}
+//               onExpired={() => setCaptchaVerified(false)}
+//             />
+//           </div>
+
 //           <Button
-//             onClick={handleLogin}
-//             className="w-full sm:w-auto cursor-pointer bg-[#7DD0AF] font-semibold"
-//             disabled={!initialized}
+//             onClick={handleCustomLogin}
+//             className="w-full sm:w-auto cursor-pointer bg-[#003566] font-semibold"
+//             disabled={loading || !captchaVerified}
 //           >
-//             Login with Keycloak
+//             {loading ? <CircularProgress size={24} /> : "Login"}
 //           </Button>
 //         </div>
 //       </div>
@@ -405,72 +290,141 @@
 
 
 
-import React, { useEffect } from "react";
+
+
+
+
+
+
+
+
+
+import React, { useState, useRef , useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Button } from "../ui/button"; // Adjust this path or replace with your button
-import { Typography } from "@mui/material";
-import { useKeycloak } from "../../KeycloakProvider";
+import { loginAdmin } from "../../redux/authSlice";
+import { Button } from "../ui/button";
+import { Typography, TextField, CircularProgress } from "@mui/material";
+import ReCAPTCHA from "react-google-recaptcha";
+
+const RECAPTCHA_SITE_KEY = "6LfAeWsrAAAAALbUorst-4I4pqAlFsMtPv4lQYJk";
 
 export default function LoginAdmin() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { keycloak, initialized, authenticated } = useKeycloak();
+  const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const { loading } = useSelector((state) => state.auth);
+  const recaptchaRef = useRef(null);
 
+  // ✅ Set selected_role from last_logged_in_role if not present
   useEffect(() => {
-    if (initialized && authenticated) {
-      toast.success("Already logged in!");
-      // navigate("/Dashboard");
+    const selectedRole = localStorage.getItem("selected_role");
+    const lastLoggedIn = localStorage.getItem("last_logged_in_role");
+
+    if (!selectedRole && lastLoggedIn) {
+      localStorage.setItem("selected_role", lastLoggedIn);
     }
-  }, [initialized, authenticated, navigate]);
+  }, []);
 
-  // const handleLogin = () => {
+  const handleCustomLogin = async () => {
+    if (!captchaVerified) {
+      toast.error("Please verify the CAPTCHA first.");
+      return;
+    }
 
-  //   keycloak.login({
-  //     redirectUri: window.location.origin + "/Dashboard",
+    // ✅ Check if trying to login with different mobile than before
+    const prevMobile = localStorage.getItem("mobile");
+    if (prevMobile && mobile !== prevMobile) {
+      toast.error("Mobile number does not match previously logged in user.");
+      return;
+    }
 
-  //   });
-  // };
+    const role = localStorage.getItem("selected_role");
 
+    const ROLE_IDS = {
+      "super-admin": 1,
+      "ministry-admin": 2,
+      "o-admin": 3,
+      "ou-admin": 4,
+    };
 
-  // useEffect(() => {
-  //   if (initialized && authenticated) {
-  //     toast.success("Login Successfully!");
-  //     navigate("/Dashboard");
-  //   }
-  // }, [initialized, authenticated, navigate]);
+    const roles_id = role ? ROLE_IDS[role.toLowerCase()] : undefined;
 
-  const handleLogin = () => {
-    keycloak.login({
-      redirectUri: window.location.origin + "/Dashboard"
-    });
+    const result = await dispatch(loginAdmin({ mobile, password, roles_id }));
+
+    if (loginAdmin.fulfilled.match(result)) {
+      toast.success("Login successful!");
+
+      const user = result.payload.user;
+
+      localStorage.setItem("token", result.payload.token);
+      localStorage.setItem("roleid", user.roleId);
+      localStorage.setItem("role", user.role);
+      localStorage.setItem("mobile", user.username);
+      localStorage.setItem("AllRoles", JSON.stringify(user.allRoles));
+      localStorage.setItem("last_logged_in_role", user.role); // ✅ Save last role
+      localStorage.removeItem("selected_role"); // cleanup
+
+      navigate("/Dashboard");
+    } else {
+      toast.error(result.payload || "Login failed");
+      recaptchaRef.current.reset();
+      setCaptchaVerified(false);
+    }
   };
+
   return (
-    <div
-      className="min-h-screen w-full px-4 py-8 flex flex-col items-center"
-      style={{ backgroundSize: "cover", backgroundPosition: "center", overflowX: "hidden" }}
-    >
+    <div className="min-h-screen w-full px-4 py-8 flex flex-col items-center">
       <div className="w-full max-w-screen-sm mt-8 p-6 bg-white border border-[#168943] shadow-2xl rounded-lg text-center space-y-4">
-        <div
-          className="admin_form"
-          style={{ border: "1px solid", padding: "5%", borderRadius: "10px" }}
-        >
+        <div className="admin_form" style={{ border: "1px solid", padding: "5%", borderRadius: "10px" }}>
           <div className="logo_img" style={{ textAlign: "-webkit-center" }}>
             <img src="assets/images/sandes_logo.png" width="15%" alt="Logo" />
           </div>
+
           <Typography variant="h5" fontWeight="bold" gutterBottom textAlign="center">
             Sandes Authentication Admin Login
           </Typography>
 
           <h1 className="text-xl sm:text-2xl font-semibold text-blue-950 mb-3">
-            Login via Keycloak
+            Login via Mobile Number
           </h1>
 
+          <TextField
+            fullWidth
+            label="Mobile Number"
+            variant="outlined"
+            margin="normal"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            variant="outlined"
+            margin="normal"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <div className="my-4 flex">
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={RECAPTCHA_SITE_KEY}
+              onChange={() => setCaptchaVerified(true)}
+              onExpired={() => setCaptchaVerified(false)}
+            />
+          </div>
+
           <Button
-            onClick={handleLogin}
-            className="w-full sm:w-auto cursor-pointer bg-[#7DD0AF] font-semibold"
-            disabled={!initialized}
+            onClick={handleCustomLogin}
+            className="w-full sm:w-auto cursor-pointer bg-[#003566] font-semibold"
+            disabled={loading || !captchaVerified}
           >
-            Login with Keycloak
+            {loading ? <CircularProgress size={24} /> : "Login"}
           </Button>
         </div>
       </div>

@@ -1,36 +1,24 @@
-import React, { useState } from 'react';
-import {Typography, Box, Toolbar} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Typography, Box, Toolbar, ButtonBase } from '@mui/material';
 import Popover from '@mui/material/Popover';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-
-const tableData = [
-    { id: 1, name: 'Amit Sharma', email: 'amit@example.com', phone: '9876543210', city: 'Delhi', role: 'Developer', status: 'Active' },
-    { id: 2, name: 'Priya Singh', email: 'priya@example.com', phone: '8765432109', city: 'Mumbai', role: 'Designer', status: 'Inactive' },
-    { id: 3, name: 'Rahul Verma', email: 'rahul@example.com', phone: '7654321098', city: 'Bangalore', role: 'Manager', status: 'Active' },
-    { id: 4, name: 'Sneha Gupta', email: 'sneha@example.com', phone: '6543210987', city: 'Kolkata', role: 'Tester', status: 'Active' },
-    { id: 5, name: 'Vikram Rao', email: 'vikram@example.com', phone: '5432109876', city: 'Chennai', role: 'Analyst', status: 'Inactive' },
-    { id: 6, name: 'Anjali Mehta', email: 'anjali@example.com', phone: '4321098765', city: 'Pune', role: 'Developer', status: 'Active' },
-    { id: 7, name: 'Karan Patel', email: 'karan@example.com', phone: '3210987654', city: 'Hyderabad', role: 'Designer', status: 'Inactive' },
-    { id: 8, name: 'Neha Joshi', email: 'neha@example.com', phone: '2109876543', city: 'Ahmedabad', role: 'Manager', status: 'Active' },
-    { id: 9, name: 'Ravi Kumar', email: 'ravi@example.com', phone: '1098765432', city: 'Jaipur', role: 'Tester', status: 'Active' },
-    { id: 10, name: 'Suman Das', email: 'suman@example.com', phone: '0987654321', city: 'Lucknow', role: 'Analyst', status: 'Inactive' },
-    { id: 11, name: 'Pooja Reddy', email: 'pooja@example.com', phone: '9876543211', city: 'Surat', role: 'Developer', status: 'Active' },
-    { id: 12, name: 'Arjun Yadav', email: 'arjun@example.com', phone: '8765432110', city: 'Nagpur', role: 'Designer', status: 'Inactive' },
-    { id: 13, name: 'Meera Nair', email: 'meera@example.com', phone: '7654321109', city: 'Bhopal', role: 'Manager', status: 'Active' },
-    { id: 14, name: 'Suresh Menon', email: 'suresh@example.com', phone: '6543211098', city: 'Patna', role: 'Tester', status: 'Active' },
-    { id: 15, name: 'Lakshmi Pillai', email: 'lakshmi@example.com', phone: '5432109987', city: 'Kochi', role: 'Analyst', status: 'Inactive' },
-];
-
+import { useDispatch, useSelector } from "react-redux";
+import { fetchEmployees } from "../../redux/authSlice";
 
 function OrganizationOverviewDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedRowId, setSelectedRowId] = useState(null);
     const rowsPerPage = 5;
-
+    const dispatch = useDispatch();
+    const employeeState = useSelector((state) => state.employee);
+    const tableData = employeeState.employees
+    useEffect(() => {
+        dispatch(fetchEmployees());
+    }, [dispatch]);
     // Calculate total pages
     const totalPages = Math.ceil(tableData.length / rowsPerPage);
 
@@ -58,7 +46,7 @@ function OrganizationOverviewDash({ drawerWidth, collapsedDrawerWidth, desktopOp
 
     // Handle menu item click
     const handleMenuItemClick = (action, rowId) => {
-        console.log(`Action: ${action} for Row ID: ${rowId}`);
+        // console.log(`Action: ${action} for Row ID: ${rowId}`);
         handlePopoverClose();
     };
 
@@ -73,15 +61,15 @@ function OrganizationOverviewDash({ drawerWidth, collapsedDrawerWidth, desktopOp
             <nav className="d-flex justify-content-center mt-3">
                 <ul className="pagination">
                     <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                        <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
+                        <Button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
                             Previous
-                        </button>
+                        </Button>
                     </li>
                     {pageNumbers.map((number) => (
                         <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
-                            <button className="page-link" onClick={() => handlePageChange(number)}>
+                            <Button className="page-link" onClick={() => handlePageChange(number)}>
                                 {number}
-                            </button>
+                            </Button>
                         </li>
                     ))}
                     <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
@@ -95,22 +83,22 @@ function OrganizationOverviewDash({ drawerWidth, collapsedDrawerWidth, desktopOp
     };
 
     return (
-       <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          transition: "margin 0.3s, width 0.3s",
-          width: {
-            xs: "100%",
-            md: desktopOpen
-              ? `calc(100% - ${drawerWidth}px)`
-              : `calc(100% - ${collapsedDrawerWidth}px)`,
-          },
-          bgcolor: "background.default",
-        }}
-      >
-        <Toolbar />
+        <Box
+            component="main"
+            sx={{
+                flexGrow: 1,
+                p: 3,
+                transition: "margin 0.3s, width 0.3s",
+                width: {
+                    xs: "100%",
+                    md: desktopOpen
+                        ? `calc(100% - ${drawerWidth}px)`
+                        : `calc(100% - ${collapsedDrawerWidth}px)`,
+                },
+                bgcolor: "background.default",
+            }}
+        >
+            <Toolbar />
             <div className="m-3" style={{ height: '70vh' }}>
                 <div className="overdata" style={{ justifyContent: 'space-between', display: 'flex' }}>
                     <Typography variant="h5" align="center" gutterBottom color='#003566' fontWeight="700">
@@ -150,7 +138,7 @@ function OrganizationOverviewDash({ drawerWidth, collapsedDrawerWidth, desktopOp
                                             variant="outlined"
                                             size="small"
                                             className='btn-bg-1'
-                                            sx={{color:"#fff"}}
+                                            sx={{ color: "#fff" }}
                                             onClick={(event) => handlePopoverOpen(event, row.id)}
                                         >
                                             Actions
@@ -179,21 +167,14 @@ function OrganizationOverviewDash({ drawerWidth, collapsedDrawerWidth, desktopOp
                                                 </ListItem>
 
                                                 <ListItem
-                                                     button
-                                                     component="a"
-                                                     href="/HeatMap"
+                                                    button
+                                                    component="a"
+                                                    href="/HeatMap"
                                                     onClick={() => handleMenuItemClick('Heat Map', row.id)}
                                                 >
                                                     <ListItemText primary="Heat Map based on chat activity" />
                                                 </ListItem>
-                                                <ListItem
-                                                    button
-                                                    component="a"
-                                                    href="/APPInsights"
-                                                    onClick={() => handleMenuItemClick('APP Insights', row.id)}
-                                                >
-                                                    <ListItemText primary="APP Insights" />
-                                                </ListItem>
+
                                             </List>
                                         </Popover>
                                     </td>
@@ -204,8 +185,8 @@ function OrganizationOverviewDash({ drawerWidth, collapsedDrawerWidth, desktopOp
                 </div>
                 {renderPagination()}
             </div>
-          
-          </Box>
+
+        </Box>
     );
 }
 

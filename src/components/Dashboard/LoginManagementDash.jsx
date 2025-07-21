@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Popover from '@mui/material/Popover';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -16,7 +16,8 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
-import Json from "../../Json/Data.json"
+import { useDispatch, useSelector } from "react-redux";
+import { fetchEmployees } from "../../redux/authSlice";
 
 
 function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
@@ -39,13 +40,29 @@ function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
     const [age, setAge] = useState(''); // State for the dropdown (age selection)
     const [imagePreview, setImagePreview] = useState(''); // State for image preview
     const [imagePreviewProfile, setImagePreviewProfile] = useState('');
-    const tableData = Json;
+    const dispatch = useDispatch();
+    const employeeState = useSelector((state) => state.employee);
+    const tableData = employeeState.employees
+    useEffect(() => {
+        dispatch(fetchEmployees());
+    }, [dispatch]);
     const rowsPerPage = 5;
     const totalPages = Math.ceil(tableData.length / rowsPerPage);
     const indexOfLastRow = currentPage * rowsPerPage;
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     const currentRows = tableData.slice(indexOfFirstRow, indexOfLastRow);
     const [columns, setColumns] = useState([]);
+
+
+    const [formData, setFormData] = useState({
+        organizationCode: '',
+        organizationType: '',
+        organizationName: '',
+        vhost: '',
+        orgVisibility: '',
+        publicVisibility: ''
+    });
+
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
@@ -56,36 +73,36 @@ function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
         setSelectedRowId(rowId);
     };
 
-        useEffect(() => {
-            if (tableData && tableData.length > 0) {
-                const keys = Object.keys(tableData[0]);
-                const cols = keys
-                    .filter(key => key !== 'action')
-                    .map(key => ({
-                        headerName: key.charAt(0).toUpperCase() + key.slice(1),
-                        field: key,
-                        sortable: true,
-                        filter: true,
-                        resizable: true,
-                    }));
-    
-                cols.push({
-                    headerName: 'Action',
-                    field: 'action',
-                    cellRenderer: (params) => (
-                        <Button
-                            variant="outlined"
-                            sx={{ color: '#fff', backgroundColor: '#003566', fontSize: ".8rem" }}
-                            onClick={(event) => handlePopoverOpen(event, params.data)}
-                        >
-                            Actions
-                        </Button>
-                    ),
-                });
-    
-                setColumns(cols);
-            }
-        }, [tableData]);
+    useEffect(() => {
+        if (tableData && tableData.length > 0) {
+            const keys = Object.keys(tableData[0]);
+            const cols = keys
+                .filter(key => key !== 'action')
+                .map(key => ({
+                    headerName: key.charAt(0).toUpperCase() + key.slice(1),
+                    field: key,
+                    sortable: true,
+                    filter: true,
+                    resizable: true,
+                }));
+
+            cols.push({
+                headerName: 'Action',
+                field: 'action',
+                cellRenderer: (params) => (
+                    <Button
+                        variant="outlined"
+                        sx={{ color: '#fff', backgroundColor: '#003566', fontSize: ".8rem" }}
+                        onClick={(event) => handlePopoverOpen(event, params.data)}
+                    >
+                        Actions
+                    </Button>
+                ),
+            });
+
+            setColumns(cols);
+        }
+    }, [tableData]);
 
     const handlePopoverClose = () => {
         setAnchorEl(null);
@@ -94,36 +111,136 @@ function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
 
     const handleMenuItemClick = (action, rowId) => {
         if (action === 'Send Sandes Message') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpen(true); // Open the drawer when "Send Sandes Message" is clicked        
         }
         if (action === "Change Profile Photo") {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenProfile(true);
         }
         if (action === 'View Details') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenDetails(true);
         }
         if (action === 'Edit Details') {
+            if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenEdit(true);
         }
         if (action === 'Delete Member') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenDelete(true);
         }
         if (action === 'Manage Roles/Privileges') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenRole(true);
         }
         if (action === 'Manage Groups') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenGroup(true);
         }
         if (action === 'Manage Groups Admin') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenGroupAdmin(true);
         }
         if (action === 'Transfer Member') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenTransfer(true);
         }
         if (action === 'Offboard Member') {
+              if (rowId) {
+                setFormData({
+                    organizationCode: rowId.id || '',
+                    organizationType: rowId.email || '',
+                    organizationName: rowId.name || '',
+                    vhost: rowId.phone || '',
+                    orgVisibility: rowId.city || '',
+                    publicVisibility: rowId.role || '',
+                });
+            }
             setOpenOffboard(true);
         }
-        console.log(`Action: ${action} for Row ID: ${rowId}`);
+        // console.log(`Action: ${action} for Row ID: ${rowId}`);
         handlePopoverClose();
     };
 
@@ -290,65 +407,65 @@ function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                         <Typography margin={2} >OU for POC</Typography>
                         <hr />
 
-                        <ListItem button onClick={() => handleMenuItemClick('Send Sandes Message')}>
+                        <ListItem button onClick={() => handleMenuItemClick('Send Sandes Message', selectedRowId)}>
                             <FontAwesomeIcon icon={faEnvelope} className='mr-1' style={{ color: "#158cba" }} />  <ListItemText primary="Send Sandes Message" />
                         </ListItem>
                         <ListItem
                             button
-                            onClick={() => handleMenuItemClick('Change Profile Photo')}
+                            onClick={() => handleMenuItemClick('Change Profile Photo', selectedRowId)}
                         >
                             <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faCamera} />  <ListItemText primary="Change Profile Photo" />
                         </ListItem>
                         <ListItem
                             button
-                            onClick={() => handleMenuItemClick('View Details')}
+                            onClick={() => handleMenuItemClick('View Details', selectedRowId)}
                         >
                             <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faMagnifyingGlass} />  <ListItemText primary="View Details" />
                         </ListItem>
                         <ListItem
                             button
-                            onClick={() => handleMenuItemClick('Edit Details')}
+                            onClick={() => handleMenuItemClick('Edit Details', selectedRowId)}
                         >
                             <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faPenToSquare} />  <ListItemText primary="Edit Details" />
                         </ListItem>
                         <ListItem
                             button
-                            onClick={() => handleMenuItemClick('Delete Member')}
+                            onClick={() => handleMenuItemClick('Delete Member', selectedRowId)}
                         >
                             <FontAwesomeIcon className='mr-1' icon={faTrash} style={{ color: "#ff0000b8" }} />   <ListItemText primary="Delete Member" />
                         </ListItem>
                         <hr />
                         <ListItem
                             button
-                            onClick={() => handleMenuItemClick('Manage Roles/Privileges')}
+                            onClick={() => handleMenuItemClick('Manage Roles/Privileges', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faGear} className='mr-1' style={{ color: "green" }} /> <ListItemText primary="Manage Roles/Privileges" />
                         </ListItem>
                         <ListItem
                             button
 
-                            onClick={() => handleMenuItemClick('Manage Groups')}
+                            onClick={() => handleMenuItemClick('Manage Groups', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faUsersLine} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Manage Groups" />
                         </ListItem>
                         <ListItem
                             button
 
-                            onClick={() => handleMenuItemClick('Manage Groups Admin')}
+                            onClick={() => handleMenuItemClick('Manage Groups Admin', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faUsersLine} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Manage Groups Admin" />
                         </ListItem>
                         <ListItem
                             button
 
-                            onClick={() => handleMenuItemClick('Transfer Member')}
+                            onClick={() => handleMenuItemClick('Transfer Member', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faTelegram} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Transfer Member" />
                         </ListItem>
                         <ListItem
                             button
 
-                            onClick={() => handleMenuItemClick('Offboard Member')}
+                            onClick={() => handleMenuItemClick('Offboard Member', selectedRowId)}
                         >
                             <FontAwesomeIcon icon={faRightFromBracket} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Offboard Member" />
                         </ListItem>

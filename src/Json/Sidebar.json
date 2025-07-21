@@ -71,10 +71,22 @@
                     "validate_employee_data": "active"
                 }
             }
+        ],
+        "module": [
+           
+            {
+                "All Module": {
+                    "add_modules": "active",
+                    "edit": "active",
+                    "modules_list": "active",
+                    "delete": "active"
+                    
+                }
+            }
         ]
     },
     {
-        "role": "admin",
+        "role": "ministry_admin",
         "id": 2,
         "permission": [
              {
@@ -114,5 +126,89 @@
                 }
             }
         ]
+    },
+     {
+        "role": "o_admin",
+        "id": 3,
+        "permission": [
+             {
+                "Organization": {
+                    "add_organisation": "active",
+                    "edit": "active",
+                    "organisation_list": "active",
+                    "delete": "active",
+                    "daily_chat_statistics": "inactive",
+                    "percapita_statistics": "active",
+                    "organization_unit_wise_statistics": "active",
+                    "top/buttom_reports": "active",
+                    "top/buttom_reports_single_page_view": "active"
+                }
+            },
+            {
+                "Members": {
+                    "add_member": "active",
+                    "edit_member": "active",
+                    "member_list": "active",
+                    "delete_member": "active",
+                    "view_member_profile": "active"
+                }
+            },
+            {
+                "Groups": {
+                    "add_group": "active",
+                    "edit_group": "active",
+                    "group_list": "active"
+                }
+            },
+            {
+                "Designations": {
+                    "add_designation": "active",
+                    "edit_designation": "active",
+                    "designation_list": "active"
+                }
+            },
+            {
+                "Import Employees": {
+                    "import_employee_data": "active",
+                    "validate_employee_data": "active"
+                }
+            }
+        ]
+    },
+     {
+        "role": "ou_admin",
+        "id": 4,
+        "permission": [
+             {
+                "Organization": {
+                    "add_organisation": "active",
+                    "edit": "active",
+                    "organisation_list": "active",
+                    "delete": "active",
+                    "daily_chat_statistics": "inactive",
+                    "percapita_statistics": "active",
+                    "organization_unit_wise_statistics": "active",
+                    "top/buttom_reports": "active",
+                    "top/buttom_reports_single_page_view": "active"
+                }
+            },
+            {
+                "Members": {
+                    "add_member": "active",
+                    "edit_member": "active",
+                    "member_list": "active",
+                    "delete_member": "active",
+                    "view_member_profile": "active"
+                }
+            },
+            {
+                "Groups": {
+                    "add_group": "active",
+                    "edit_group": "active",
+                    "group_list": "active"
+                }
+            }
+        ]
     }
+    
 ]

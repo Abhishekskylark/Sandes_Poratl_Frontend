@@ -35,8 +35,8 @@ const EmployeHeatMapDash = ({ drawerWidth, collapsedDrawerWidth, desktopOpen }) 
   };
 
   const handleGenerateClick = () => {
-    console.log("Start Date:", startDate);
-    console.log("End Date:", endDate);
+    // console.log("Start Date:", startDate);
+    // console.log("End Date:", endDate);
   };
 
   return (

@@ -54,7 +54,7 @@ function PercapitaStatisticsDash({ drawerWidth, collapsedDrawerWidth, desktopOpe
 
     // Handle menu item click
     const handleMenuItemClick = (action, rowId) => {
-        console.log(`Action: ${action} for Row ID: ${rowId}`);
+        // console.log(`Action: ${action} for Row ID: ${rowId}`);
         handlePopoverClose();
     };
 
