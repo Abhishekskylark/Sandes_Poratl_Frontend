@@ -65,3 +65,9 @@ th {
 .ag-overlay-no-rows-center{
     color: #fff;
 }
+
+
+.ag-paging-page-summary-panel{
+background-color: #003566;
+color: #fff;
+}

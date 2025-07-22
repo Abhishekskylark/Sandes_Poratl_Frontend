@@ -1,46 +1,16 @@
-// // src/redux/store.js
-// import { configureStore } from "@reduxjs/toolkit";
-// import authReducer from "./authSlice";
-// import moduleReducer from "./authSlice";
-// import employeeReducer from "./authSlice";
-
-// export default configureStore({
-//   reducer: {
-//     auth: authReducer,
-//     modules: moduleReducer,
-//     employee: employeeReducer,
-//   }
-// });
-
-
-
-
-// import { configureStore } from "@reduxjs/toolkit";
-// import authReducer, { moduleReducer, employeeReducer,orgnizationReducer, UpdateOrganizationReducer} from "./authSlice";
-
-// const store = configureStore({
-//   reducer: {
-//     auth: authReducer,
-//     modules: moduleReducer,
-//     employee: employeeReducer, // ✅ Must match useSelector
-//     orgnization:orgnizationReducer,
-//     UpdateOrganization:UpdateOrganizationReducer
-//   },
-// });
-
-// export default store;
-
-
-
-
-
 import { configureStore } from '@reduxjs/toolkit';
 import {
   moduleReducer,
+  messageCountReducer,
+  registrationReducer,
   employeeReducer,
+  usersReducer,
   organizationReducer,
+  organizationUnitReducer,
   designationReducer,
   groupReducer,
+  ministryReducer,
+  organizationTypeReducer,
   updateOrganizationReducer,
   authReducer,
 } from './authSlice';
@@ -49,9 +19,15 @@ const store = configureStore({
   reducer: {
     module: moduleReducer,
     employee: employeeReducer,
+    messageCount:messageCountReducer,
+    registration:registrationReducer,
+    users: usersReducer,
     organization: organizationReducer,
-    designation:designationReducer,
-    group:groupReducer,
+    organizationUnit: organizationUnitReducer,
+    designation: designationReducer,
+    group: groupReducer,
+    ministry: ministryReducer,
+    organizationType: organizationTypeReducer,
     updateOrganization: updateOrganizationReducer,
     auth: authReducer,
   },

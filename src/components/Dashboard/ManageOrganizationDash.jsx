@@ -13,8 +13,11 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { useDispatch, useSelector } from "react-redux";
-import { fetchOrganization, updateOrganization } from "../../redux/authSlice";
+import { fetchOrganization, updateOrganization, fetchMinistry, fetchOrganizationType } from "../../redux/authSlice";
+import { toast } from 'react-toastify';
 
 
 function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
@@ -22,11 +25,11 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     const permissionData = location.state?.permissionData;
     const dispatch = useDispatch();
     const organizationState = useSelector((state) => state.organization);
-
+    const ministryState = useSelector((state) => state.ministry);
+    const organizationTypeState = useSelector((state) => state.organizationType);
     const tableData = organizationState.organization
-    useEffect(() => {
-        dispatch(fetchOrganization());
-    }, [dispatch]);
+    const MinistryData = ministryState.ministry
+    const organizationType = organizationTypeState.organizationType
     const [columns, setColumns] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
     const [showSelect, setShowSelect] = useState(false);
@@ -36,6 +39,11 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     const [selectedRowData, setSelectedRowData] = useState(null); // Updated
     const [openNew, setOpenNew] = useState(false);
 
+    useEffect(() => {
+        dispatch(fetchOrganization());
+        dispatch(fetchMinistry());
+        dispatch(fetchOrganizationType());
+    }, [dispatch]);
 
     const handleChange = (e) => {
         dispatch(setFormData({
@@ -44,10 +52,25 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        dispatch(updateOrganization({ formData, rowId: selectedRowData }))
+
+        try {
+            const res = await dispatch(updateOrganization({ formData, rowId: selectedRowData }));
+
+            if (res.meta.requestStatus === 'fulfilled') {
+                setOpenEdit(false);                         
+                await dispatch(fetchOrganization());   
+                toast.success("Organization updated!");
+            } else {
+                toast.error("Update failed");
+            }
+        } catch (err) {
+            toast.error("Something went wrong");
+            console.error(err);
+        }
     };
+
 
     const [formData, setFormData] = useState({
         gu_id: '',
@@ -58,6 +81,8 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         orgVisibility: '',
         publicVisibility: ''
     });
+
+    console.log("formData", formData);
 
 
     const handlePopoverOpen = (event, rowData) => {
@@ -77,51 +102,51 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                 setSelectedRowData(rowId);
                 setFormData({
                     gu_id: rowId.gu_id || '',
-                    organizationCode: rowId.id || '',
+                    organizationCode: rowId.organization_code || '',
                     organizationType: rowId.organization_type_id || '',
                     organizationName: rowId.o_name || '',
                     vhost_id: rowId.vhost_id || '',
-                    orgVisibility: rowId.is_o_visibility == "true" ? 1 : 0,
-                    publicVisibility: rowId.is_public_visibility == "true" ? 1 : 0,
+                    orgVisibility: rowId.is_o_visibility == true ? 1 : 0,
+                    publicVisibility: rowId.is_public_visibility == true ? 1 : 0,
 
 
                 });
             }
-            setOpen(true); // Open the drawer when "Send Sandes Message" is clicked
+            setOpen(true);
         }
         if (action === 'Edit') {
             if (rowId) {
+                console.log("rowId", rowId);
+
                 setFormData({
                     gu_id: rowId.gu_id || '',
-                    organizationCode: rowId.id || '',
+                    organizationCode: rowId.organization_code || '',
                     organizationType: rowId.organization_type_id || '',
                     organizationName: rowId.o_name || '',
                     vhost_id: rowId.vhost_id || '',
-                    orgVisibility: rowId.is_o_visibility == "true" ? 1 : 0,
-                    publicVisibility: rowId.is_public_visibility == "true" ? 1 : 0,
+                    orgVisibility: rowId.is_o_visibility == true ? 1 : 0,
+                    publicVisibility: rowId.is_public_visibility == true ? 1 : 0,
 
 
                 });
             }
-            setOpenEdit(true); // Open the drawer when "Send Sandes Message" is clicked
+            setOpenEdit(true);
         }
         if (action === 'Delete') {
             if (rowId) {
                 setFormData({
                     gu_id: rowId.gu_id || '',
-                    organizationCode: rowId.id || '',
+                    organizationCode: rowId.organization_code || '',
                     organizationType: rowId.organization_type_id || '',
                     organizationName: rowId.o_name || '',
-                    vhost_id: rowId.vhost_id || '',
-                    orgVisibility: rowId.is_o_visibility == "true" ? 1 : 0,
-                    publicVisibility: rowId.is_public_visibility == "true" ? 1 : 0,
+                    vhost: rowId.vhost || '',
+                    orgVisibility: rowId.is_o_visibility == true ? 1 : 0,
+                    publicVisibility: rowId.is_public_visibility == true ? 1 : 0,
 
                 });
             }
-            setOpenDel(true); // Open the drawer when "Send Sandes Message" is clicked
+            setOpenDel(true);
         }
-
-        // console.log(`Action: ${action} for Row ID: ${selectedRowData?.id}`);
         handlePopoverClose();
     };
 
@@ -133,7 +158,6 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     const toggleDrawer = (open) => () => {
         setOpen(open);
     };
-
     const toggleDrawerEdit = (open) => () => {
         setOpenEdit(open);
     };
@@ -143,36 +167,69 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     const toggleDrawerNew = (status) => () => {
         setOpenNew(status);
     };
-    useEffect(() => {
-        if (tableData && tableData.length > 0) {
-            const keys = Object.keys(tableData[0]);
-            const cols = keys
-                .filter(key => key !== 'action')
-                .map(key => ({
-                    headerName: key.charAt(0).toUpperCase() + key.slice(1),
-                    field: key,
-                    sortable: true,
-                    filter: true,
-                    resizable: true,
-                }));
 
-            cols.push({
-                headerName: 'Action',
-                field: 'action',
-                cellRenderer: (params) => (
-                    <Button
-                        variant="outlined"
-                        sx={{ color: '#fff', backgroundColor: '#003566', fontSize: ".8rem" }}
-                        onClick={(event) => handlePopoverOpen(event, params.data)}
-                    >
-                        Actions
-                    </Button>
-                ),
+    useEffect(() => {
+        if (tableData && organizationType.length && MinistryData.length) {
+            const displayColumns = [
+                { field: 'id', headerName: 'ID', sort: 'asc' },
+                { field: 'o_name', headerName: 'O Name' },
+                { field: 'organisation_type_id', headerName: 'Organisation Type' },
+                { field: 'organization_code', headerName: 'Organisation Code' },
+                { field: 'ministry_id', headerName: 'Ministry' },
+                { field: 'vhost', headerName: 'Vhost' },
+                { field: 'is_o_visibility', headerName: 'O Visibility' },
+                { field: 'is_public_visibility', headerName: 'Public Visibility' },
+                { field: 'action', headerName: 'Action' }
+            ];
+
+            const formattedColumns = displayColumns.map(col => {
+                if (col.field === 'organisation_type_id') {
+                    return {
+                        ...col,
+                        valueGetter: (params) => {
+                            const match = organizationType.find(item => item.code === params.data.organization_type_id);
+                            return match ? match.description : '';
+                        }
+                    };
+                } else if (col.field === 'ministry_id') {
+                    return {
+                        ...col,
+                        valueGetter: (params) => {
+                            const match = MinistryData.find(item => item.id === params.data.ministry_id);
+                            return match ? match.ministry_name : '';
+                        }
+                    };
+                } else if (col.field === 'action') {
+                    return {
+                        ...col,
+                        cellRenderer: (params) => (
+                            <Button
+                                variant="outlined"
+                                sx={{ color: '#fff', backgroundColor: '#003566', fontSize: ".8rem" }}
+                                onClick={(event) => handlePopoverOpen(event, params.data)}
+                            >
+                                Actions
+                            </Button>
+                        )
+                    };
+                } else {
+                    return {
+                        ...col,
+                        headerName: formatHeader(col.headerName || col.field)
+                    };
+                }
             });
 
-            setColumns(cols);
+            setColumns(formattedColumns);
         }
-    }, [tableData]);
+    }, [tableData, organizationType, MinistryData]);
+
+    const formatHeader = (field) => {
+        return field
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, char => char.toUpperCase());
+    };
+
 
 
     return (
@@ -296,7 +353,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                     </FormControl>
                 )}
 
-                <div className="ag-theme-alpine" style={{ height: 560, width: '100%', padding: '10px', borderRadius: '10px' }}>
+                <div className="ag-theme-alpine" style={{ height: 541, width: '100%', borderRadius: '10px' }}>
 
                     <AgGridReact
                         rowData={permissionData.organisation_list === "active" ? tableData : []}
@@ -405,6 +462,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                 </Popover>
             </div>
 
+            {/* Drawer for Create */}
             <Drawer anchor="top" open={openNew} onClose={toggleDrawerNew(false)}>
                 <Box className="mt-14" sx={{ width: "100%", p: 3 }} role="presentation">
                     <Typography variant="h5" mb={2} color='#003566' fontWeight="700">
@@ -526,9 +584,8 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
             <Drawer anchor="top" open={openEdit} onClose={toggleDrawerEdit(false)}>
                 <div className="modal-content mt-14" style={{ padding: "2%" }}>
                     <div class="modal-header">
-                        {/* <h5 class="modal-title" id="exampleModalLabel">New Organization Unit [Ministry for POC]</h5> */}
                         <Typography variant="h5" mb={2} color='#003566' fontWeight="700">Update Organization</Typography>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" onClick={() => setOpenEdit(false)} data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form onSubmit={handleSubmit}>
                         <Typography variant="h6" mb={2} mt={2} textAlign="center" color="#003566">
@@ -639,7 +696,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                         </div>
 
                         <button type="submit" className="btn btn-success m-3">Update</button>
-                        <button type="button" className="btn btn-danger">Close</button>
+                        <button type="button" onClick={() => setOpenEdit(false)} className="btn btn-danger">Close</button>
                     </form>
                 </div>
             </Drawer>
@@ -648,26 +705,22 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
             <Drawer anchor="top" open={openDel} onClose={toggleDrawerDel(false)}>
                 <div className="modal-content mt-14" style={{ padding: "2%" }}>
                     <div class="modal-header">
-                        {/* <h5 class="modal-title" id="exampleModalLabel">New Organization Unit [Ministry for POC]</h5> */}
                         <Typography variant="h5" color='#003566' fontWeight="700" mb={2}>Delete Organization</Typography>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form>
-
-                        {/* <Typography variant="h6" mb={2} mt={2} textAlign="center">Delete Organization Unit</Typography> */}
-
                         <div className="row">
                             <div className="col-md-6  mt-3">
                                 <lavel>Organization Code	</lavel>
-                                <input class="form-control" type="text" placeholder="O_POC" aria-label="default input example" value="O_POC" readOnly />
+                                <input class="form-control" type="text" placeholder="O_POC" aria-label="default input example" value={formData.organization_code} readOnly />
                             </div>
                             <div className="col-md-6  mt-3">
                                 <lavel>Organization</lavel>
-                                <input class="form-control" type="text" placeholder="Organization" aria-label="default input example" value="" readOnly />
+                                <input class="form-control" type="text" placeholder="Organization" aria-label="default input example" value={formData.organizationName} readOnly />
                             </div>
                             <div className="col-md-6  mt-3">
                                 <lavel>Organization Name</lavel>
-                                <input class="form-control" type="text" placeholder="Organization for POC	" aria-label="default input example" value="Organization for POC" readOnly />
+                                <input class="form-control" type="text" placeholder="Organization for POC	" aria-label="default input example" value={formData.organizationName} readOnly />
                             </div>
                             <div className="col-md-6  mt-3">
                                 <lavel>Ministry	</lavel>
@@ -675,12 +728,12 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                             </div>
                             <div className="col-md-6 mt-3">
                                 <lavel>Organization Type	</lavel>
-                                <input class="form-control" type="text" placeholder="Organization Type" aria-label="default input example" value="Department under Ministry" readOnly />
+                                <input class="form-control" type="text" placeholder="Organization Type" aria-label="default input example" value={formData.organizationType} readOnly />
                             </div>
 
                             <div className="col-md-6  mt-3">
                                 <lavel>Vhost</lavel>
-                                <input class="form-control" type="text" placeholder="Vhost" aria-label="default input example" value="fd6cca52.gims.gov.in" readOnly />
+                                <input class="form-control" type="text" placeholder="Vhost" aria-label="default input example" value={formData.vhost} readOnly />
                             </div>
 
 

@@ -1,11 +1,32 @@
 import { Box, Typography, Grid, Button, useMediaQuery, useTheme } from "@mui/material";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUsers, fetchOrganizationUnit, fetchRegistration, fetchMessageCount } from '../../redux/authSlice';
 import ReactApexChart from 'react-apexcharts';
 import Json from "../../Json/File.json"
 import Chart from 'react-apexcharts';
 
 function Statistics() {
 
+    const dispatch = useDispatch();
+    const usersState = useSelector((state) => state.users);
+    const organizationUnitState = useSelector((state) => state.organizationUnit);
+    const RegistrationState = useSelector((state) => state.registration);
+    const messageCountState = useSelector((state) => state.messageCount);
+    // const TotalUsers = usersState.users.totalCount
+    // const TotalOrganizationUnit = organizationUnitState.organizationUnit.totalCount
+    // const TotalRegistration = RegistrationState.registration.totalCount
+    // const TotalMessageCount = messageCountState.messageCount.totalCount
+
+    console.log("RegistrationState",RegistrationState.registration.data);
+    
+
+    useEffect(() => {
+        dispatch(fetchUsers());
+        dispatch(fetchOrganizationUnit());
+        dispatch(fetchRegistration());
+        dispatch(fetchMessageCount());
+    }, [dispatch]);
 
     const [chartData, setChartData] = useState(
         Json[0].series[0].data.map((item) => ({
