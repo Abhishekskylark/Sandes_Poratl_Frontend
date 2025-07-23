@@ -7,12 +7,15 @@ import {
   usersReducer,
   organizationReducer,
   organizationUnitReducer,
+  mastersDistrictsReducer,
+  mastersStatesReducer,
   designationReducer,
   groupReducer,
   ministryReducer,
   organizationTypeReducer,
   updateOrganizationReducer,
   authReducer,
+  deleteOrganizationReducer,
 } from './authSlice';
 
 const store = configureStore({
@@ -24,11 +27,14 @@ const store = configureStore({
     users: usersReducer,
     organization: organizationReducer,
     organizationUnit: organizationUnitReducer,
+    masterDistricts:mastersDistrictsReducer,
+    masterStates:mastersStatesReducer,
     designation: designationReducer,
     group: groupReducer,
     ministry: ministryReducer,
     organizationType: organizationTypeReducer,
     updateOrganization: updateOrganizationReducer,
+    deleteOrganization:deleteOrganizationReducer,
     auth: authReducer,
   },
 });

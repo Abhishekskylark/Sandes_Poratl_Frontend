@@ -16,7 +16,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
 import { useDispatch, useSelector } from "react-redux";
-import { fetchEmployees } from "../../redux/authSlice";
+import { fetchOrganizationUnit, fetchMastersDistricts, fetchMastersStates, fetchOrganizationType, fetchOrganization } from "../../redux/authSlice";
 
 function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -26,16 +26,34 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
     const [openNew, setOpenNew] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [openDel, setOpenDel] = useState(false);
-    const [age, setAge] = useState(''); // State for the dropdown (age selection)
-    const [imagePreview, setImagePreview] = useState(''); // State for image preview
+    const [age, setAge] = useState('');
+    const [imagePreview, setImagePreview] = useState('');
     const location = useLocation();
     const permissionData = location.state?.permissionData;
     const [columns, setColumns] = useState([]);
     const dispatch = useDispatch();
-    const employeeState = useSelector((state) => state.employee);
-    const tableData = employeeState.employees
+    const organizationUnitState = useSelector((state) => state.organizationUnit);
+    const mastersDistrictsState = useSelector((state) => state.masterDistricts);
+    const mastersStatesState = useSelector((state) => state.masterStates);
+    const organizationTypeState = useSelector((state) => state.organizationType);
+    const organizationState = useSelector((state) => state.organization);
+
+    const tableData = organizationUnitState.organizationUnit.data
+    const MastersDistricts = mastersDistrictsState.mastersDistricts
+    const MastersStates = mastersStatesState.mastersStates
+    const OrganizationType = organizationTypeState.organizationType
+    const Organization = organizationState.organization
+
+    console.log("tableData",tableData);
+    
+
     useEffect(() => {
-        dispatch(fetchEmployees());
+        dispatch(fetchOrganizationUnit());
+        dispatch(fetchMastersDistricts());
+        dispatch(fetchMastersStates());
+        dispatch(fetchOrganizationType());
+        dispatch(fetchOrganization());
+
     }, [dispatch]);
 
     const [formData, setFormData] = useState({
@@ -60,7 +78,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
 
     const handleMenuItemClick = (action, rowId) => {
         if (action === 'Send Sandes Message') {
-             if (rowId) {
+            if (rowId) {
                 setFormData({
                     organizationCode: rowId.id || '',
                     organizationType: rowId.email || '',
@@ -75,7 +93,9 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
         if (action === 'Edit') {
             if (rowId) {
                 setFormData({
-                    organizationCode: rowId.id || '',
+                    // gu_id: rowId.gu_id || '',
+                    gu_id: rowId.gu_id || '',
+                    Present_organization_unit: rowId.id || '',
                     organizationType: rowId.email || '',
                     organizationName: rowId.name || '',
                     vhost: rowId.phone || '',
@@ -86,7 +106,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
             setOpenEdit(true); // Open the drawer when "Send Sandes Message" is clicked
         }
         if (action === 'Delete') {
-             if (rowId) {
+            if (rowId) {
                 setFormData({
                     organizationCode: rowId.id || '',
                     organizationType: rowId.email || '',
@@ -128,35 +148,87 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
     };
 
     useEffect(() => {
-        if (tableData && tableData.length > 0) {
-            const keys = Object.keys(tableData[0]);
-            const cols = keys
-                .filter(key => key !== 'action')
-                .map(key => ({
-                    headerName: key.charAt(0).toUpperCase() + key.slice(1),
-                    field: key,
-                    sortable: true,
-                    filter: true,
-                    resizable: true,
-                }));
+        if (tableData && MastersDistricts.length && MastersStates.length && OrganizationType.length && Organization.data.length) {
+            const displayColumns = [
+                { field: 'ou_id', headerName: 'OU ID', sort: 'asc' },
+                { field: 'ou_name', headerName: 'OU Name' },
+                { field: 'ou_type', headerName: 'OU Type' },
+                { field: 'organization_id', headerName: 'Organisation' },
+                { field: 'state_id', headerName: 'State' },
+                { field: 'district_id', headerName: 'District' },
+                { field: 'ou_address', headerName: 'OU Address' },
+                { field: 'ou_code', headerName: 'OU Code' },
+                { field: 'action', headerName: 'Action' }
+            ];
 
-            cols.push({
-                headerName: 'Action',
-                field: 'action',
-                cellRenderer: (params) => (
-                    <Button
-                        variant="outlined"
-                        sx={{ color: '#fff', backgroundColor: '#003566', fontSize: ".8rem" }}
-                        onClick={(event) => handlePopoverOpen(event, params.data)}
-                    >
-                        Actions
-                    </Button>
-                ),
+            const formattedColumns = displayColumns.map(col => {
+                if (col.field === 'ou_type') {
+                    return {
+                        ...col,
+                        valueGetter: (params) => {
+                            const match = OrganizationType.find(item => item.code === params.data.ou_type);
+                            return match ? match.description : '';
+                        }
+                    };
+                } else if (col.field === 'state_id') {
+                    return {
+                        ...col,
+                        valueGetter: (params) => {
+                            const match = MastersStates.find(item => item.id === params.data.state_id);
+                            return match ? match.state : '';
+                        }
+                    };
+                }
+                else if (col.field === 'district_id') {
+                    return {
+                        ...col,
+                        valueGetter: (params) => {
+                            const match = MastersDistricts.find(item => item.id === params.data.district_id);
+                            return match ? match.district : '';
+                        }
+                    };
+                }
+                else if (col.field === 'organization_id') {
+                    return {
+                        ...col,
+                        valueGetter: (params) => {
+                            const match = Organization.data.find(item => item.id === params.data.organization_id);
+                            return match ? match.o_name : '';
+                        }
+                    };
+                }
+                else if (col.field === 'action') {
+                    return {
+                        ...col,
+                        cellRenderer: (params) => (
+                            <Button
+                                variant="outlined"
+                                sx={{ color: '#fff', backgroundColor: '#003566', fontSize: ".8rem" }}
+                                onClick={(event) => handlePopoverOpen(event, params.data)}
+                            >
+                                Actions
+                            </Button>
+                        )
+                    };
+                } else {
+                    return {
+                        ...col,
+                        headerName: formatHeader(col.headerName || col.field)
+                    };
+                }
             });
 
-            setColumns(cols);
+            setColumns(formattedColumns);
         }
-    }, [tableData]);
+    }, [tableData, MastersDistricts, MastersStates, OrganizationType, Organization]);
+
+
+    const formatHeader = (field) => {
+        return field
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, char => char.toUpperCase());
+    };
+
 
     return (
         <Box

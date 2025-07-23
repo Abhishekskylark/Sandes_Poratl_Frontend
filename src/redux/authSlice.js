@@ -281,9 +281,9 @@ export const fetchMessageCount = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get("http://localhost:8000/app_message_activity");
-      console.log("response.data",response.data);
+      console.log("response.data", response.data);
       return response.data;
-      
+
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to fetch Message Count");
     }
@@ -354,7 +354,6 @@ const employeeSlice = createSlice({
   },
 });
 
-
 /* ---------------------------- Fetch Organization  ---------------------------- */
 
 // Async thunk to fetch Organization
@@ -394,8 +393,8 @@ const organizationSlice = createSlice({
   },
 });
 
-
 /* ---------------------------- Update Organization  ---------------------------- */
+
 // Async thunk to Update Organization
 export const updateOrganization = createAsyncThunk(
   'organization/updateOrganization',
@@ -468,6 +467,55 @@ const UpdateorganizationSlice = createSlice({
   },
 });
 
+/* ---------------------------- Delete Organization  ---------------------------- */
+
+// Async thunk to Delete Organization
+export const deleteOrganization = createAsyncThunk(
+  'organization/deleteOrganization',
+  async (gu_id, thunkAPI) => {
+    try {
+      const response = await axios.delete(`http://localhost:8000/organization/${gu_id}`);
+      console.log("response",response.data);
+      
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
+    }
+  }
+);
+
+const deleteOrganizationSlice = createSlice({
+  name: 'deleteOrganization',
+  initialState: {
+    loading: false,
+    error: null,
+    successMessage: null,
+  },
+  reducers: {
+    clearDeleteStatus: (state) => {
+      state.loading = false;
+      state.error = null;
+      state.successMessage = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(deleteOrganization.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(deleteOrganization.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message || 'Organization deleted successfully';
+      })
+      .addCase(deleteOrganization.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Delete failed';
+      });
+  },
+});
+
 /* ---------------------------- Fetch Organization Unit  ---------------------------- */
 
 // Async thunk to fetch Organization Unit
@@ -507,6 +555,122 @@ const organizationUnitSlice = createSlice({
   },
 });
 
+/* ---------------------------- Fetch Masters States  ---------------------------- */
+
+// Async thunk to fetch Masters States
+export const fetchMastersStates = createAsyncThunk(
+  "mastersStates/fetchMastersStates",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get("http://localhost:8000/masters_states");
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Failed to fetch Masters States");
+    }
+  }
+);
+
+const mastersStatesSlice = createSlice({
+  name: "mastersStates",
+  initialState: {
+  mastersStates: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchMastersStates.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchMastersStates.fulfilled, (state, action) => {
+        state.loading = false;
+        state.mastersStates = action.payload;
+      })
+      .addCase(fetchMastersStates.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
+
+/* ---------------------------- Fetch Masters Districts  ---------------------------- */
+
+// Async thunk to fetch Masters Districts
+export const fetchMastersDistricts = createAsyncThunk(
+  "mastersDistricts/fetchmastersDistricts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get("http://localhost:8000/masters_districts");
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Failed to fetch Masters Districts");
+    }
+  }
+);
+
+const mastersDistrictsSlice = createSlice({
+  name: "mastersDistricts",
+  initialState: {
+    mastersDistricts: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchMastersDistricts.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchMastersDistricts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.mastersDistricts = action.payload;
+      })
+      .addCase(fetchMastersDistricts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
+
+/* ---------------------------- Fetch OrganizationType  ---------------------------- */
+
+// Async thunk to fetch OrganizationType
+export const fetchOrganizationType = createAsyncThunk(
+  "organizationType/fetchOrganizationType",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get("http://localhost:8000/organization_type");
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Failed to fetch OrganizationType");
+    }
+  }
+);
+
+const organizationTypeSlice = createSlice({
+  name: "organizationType",
+  initialState: {
+    organizationType: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchOrganizationType.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchOrganizationType.fulfilled, (state, action) => {
+        state.loading = false;
+        state.organizationType = action.payload;
+      })
+      .addCase(fetchOrganizationType.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
 
 /* ---------------------------- Fetch Designation  ---------------------------- */
 
@@ -627,56 +791,20 @@ const ministrySlice = createSlice({
 });
 
 
-/* ---------------------------- Fetch OrganizationType  ---------------------------- */
-
-// Async thunk to fetch OrganizationType
-export const fetchOrganizationType = createAsyncThunk(
-  "organizationType/fetchOrganizationType",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get("http://localhost:8000/organization_type");
-      return response.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch OrganizationType");
-    }
-  }
-);
-
-const organizationTypeSlice = createSlice({
-  name: "organizationType",
-  initialState: {
-    organizationType: [],
-    loading: false,
-    error: null,
-  },
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchOrganizationType.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchOrganizationType.fulfilled, (state, action) => {
-        state.loading = false;
-        state.organizationType = action.payload;
-      })
-      .addCase(fetchOrganizationType.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
-  },
-});
 
 /* ---------------------------- EXPORT REDUCERS ---------------------------- */
 
 export const { logout } = authSlice.actions;
 export const { clearModuleError } = moduleSlice.actions;
 export const moduleReducer = moduleSlice.reducer;
-export const usersReducer= usersSlice.reducer;
+export const usersReducer = usersSlice.reducer;
 export const registrationReducer = registrationSlice.reducer;
 export const messageCountReducer = messageCountSlice.reducer;
 export const employeeReducer = employeeSlice.reducer;
 export const organizationReducer = organizationSlice.reducer;
 export const organizationUnitReducer = organizationUnitSlice.reducer;
+export const mastersDistrictsReducer = mastersDistrictsSlice.reducer;
+export const mastersStatesReducer = mastersStatesSlice.reducer;
 export const designationReducer = designationSlice.reducer;
 export const groupReducer = groupSlice.reducer;
 export const ministryReducer = ministrySlice.reducer;
@@ -684,3 +812,5 @@ export const organizationTypeReducer = organizationTypeSlice.reducer;
 export const updateOrganizationReducer = UpdateorganizationSlice.reducer; // camelCase preferred
 export const authReducer = authSlice.reducer;
 export const { setFormData, clearFormData } = UpdateorganizationSlice.actions;
+export const { clearDeleteStatus } = deleteOrganizationSlice.actions;
+export const deleteOrganizationReducer = deleteOrganizationSlice.reducer;

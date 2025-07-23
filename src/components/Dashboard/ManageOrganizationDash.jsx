@@ -16,7 +16,7 @@ import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { useDispatch, useSelector } from "react-redux";
-import { fetchOrganization, updateOrganization, fetchMinistry, fetchOrganizationType } from "../../redux/authSlice";
+import { fetchOrganization, updateOrganization, fetchMinistry, fetchOrganizationType, deleteOrganization } from "../../redux/authSlice";
 import { toast } from 'react-toastify';
 
 
@@ -27,7 +27,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     const organizationState = useSelector((state) => state.organization);
     const ministryState = useSelector((state) => state.ministry);
     const organizationTypeState = useSelector((state) => state.organizationType);
-    const tableData = organizationState.organization
+    const tableData = organizationState.organization.data
     const MinistryData = ministryState.ministry
     const organizationType = organizationTypeState.organizationType
     const [columns, setColumns] = useState([]);
@@ -38,6 +38,9 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     const [openDel, setOpenDel] = useState(false);
     const [selectedRowData, setSelectedRowData] = useState(null); // Updated
     const [openNew, setOpenNew] = useState(false);
+
+    console.log("MinistryData", MinistryData, organizationType);
+
 
     useEffect(() => {
         dispatch(fetchOrganization());
@@ -59,8 +62,8 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
             const res = await dispatch(updateOrganization({ formData, rowId: selectedRowData }));
 
             if (res.meta.requestStatus === 'fulfilled') {
-                setOpenEdit(false);                         
-                await dispatch(fetchOrganization());   
+                setOpenEdit(false);
+                await dispatch(fetchOrganization());
                 toast.success("Organization updated!");
             } else {
                 toast.error("Update failed");
@@ -70,6 +73,8 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
             console.error(err);
         }
     };
+
+
 
 
     const [formData, setFormData] = useState({
@@ -96,6 +101,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     };
 
     const handleMenuItemClick = (action, rowId) => {
+        console.log("rowId", rowId);
 
         if (action === 'Send Sandes Message') {
             if (rowId) {
@@ -134,26 +140,35 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         }
         if (action === 'Delete') {
             if (rowId) {
+                const ministry = MinistryData.find(item => item.id === rowId.ministry_id);
+                const organization = organizationType.find(item => item.code === rowId.organization_type_id);
                 setFormData({
+                    id: rowId.id || '',
                     gu_id: rowId.gu_id || '',
                     organizationCode: rowId.organization_code || '',
                     organizationType: rowId.organization_type_id || '',
+                    organizationTypeName: organization ? organization.description : '',
                     organizationName: rowId.o_name || '',
                     vhost: rowId.vhost || '',
+                    ministry_id: rowId.ministry_id || '',
+                    ministryName: ministry ? ministry.ministry_name : '',
                     orgVisibility: rowId.is_o_visibility == true ? 1 : 0,
                     publicVisibility: rowId.is_public_visibility == true ? 1 : 0,
-
                 });
+
             }
             setOpenDel(true);
         }
         handlePopoverClose();
     };
 
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-    //     // Add form submission logic here (e.g., send message)
-    // };
+    const handleDelete = (gu_id) => {
+        if (window.confirm("Are you sure you want to delete this organization?")) {
+            console.log("delete this organization",gu_id);
+            
+            dispatch(deleteOrganization(gu_id));
+        }
+    };
 
     const toggleDrawer = (open) => () => {
         setOpen(open);
@@ -706,41 +721,34 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                 <div className="modal-content mt-14" style={{ padding: "2%" }}>
                     <div class="modal-header">
                         <Typography variant="h5" color='#003566' fontWeight="700" mb={2}>Delete Organization</Typography>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" onClick={() => setOpenDel(false)} class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form>
                         <div className="row">
                             <div className="col-md-6  mt-3">
                                 <lavel>Organization Code	</lavel>
-                                <input class="form-control" type="text" placeholder="O_POC" aria-label="default input example" value={formData.organization_code} readOnly />
+                                <input class="form-control" type="text" placeholder="O_POC" aria-label="default input example" value={formData.organizationCode} readOnly />
                             </div>
                             <div className="col-md-6  mt-3">
                                 <lavel>Organization</lavel>
                                 <input class="form-control" type="text" placeholder="Organization" aria-label="default input example" value={formData.organizationName} readOnly />
                             </div>
                             <div className="col-md-6  mt-3">
-                                <lavel>Organization Name</lavel>
-                                <input class="form-control" type="text" placeholder="Organization for POC	" aria-label="default input example" value={formData.organizationName} readOnly />
-                            </div>
-                            <div className="col-md-6  mt-3">
                                 <lavel>Ministry	</lavel>
-                                <input class="form-control" type="text" placeholder="Ministry" aria-label="default input example" value="Ministry for POC" readOnly />
+                                <input class="form-control" type="text" placeholder="Ministry" aria-label="default input example" value={formData.ministryName} readOnly />
                             </div>
                             <div className="col-md-6 mt-3">
                                 <lavel>Organization Type	</lavel>
-                                <input class="form-control" type="text" placeholder="Organization Type" aria-label="default input example" value={formData.organizationType} readOnly />
+                                <input class="form-control" type="text" placeholder="Organization Type" aria-label="default input example" value={formData.organizationTypeName} readOnly />
                             </div>
 
                             <div className="col-md-6  mt-3">
                                 <lavel>Vhost</lavel>
                                 <input class="form-control" type="text" placeholder="Vhost" aria-label="default input example" value={formData.vhost} readOnly />
                             </div>
-
-
-
                         </div>
-                        <button type="submit" class="btn btn-primary m-3">Delete</button>
-                        <button type="submit" class="btn btn-danger">Close</button>
+                        <button class="btn btn-primary m-3" type="button" onClick={() => handleDelete(formData.gu_id)}> Delete </button>
+                        <button class="btn btn-danger" type="button" onClick={() => setOpenDel(false)}>Close</button>
                     </form>
                 </div>
             </Drawer>
