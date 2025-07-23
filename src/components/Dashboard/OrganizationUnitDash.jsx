@@ -26,8 +26,8 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
     const [openNew, setOpenNew] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [openDel, setOpenDel] = useState(false);
-    const [age, setAge] = useState('');
-    const [imagePreview, setImagePreview] = useState('');
+    const [age, setAge] = useState(''); // State for the dropdown (age selection)
+    const [imagePreview, setImagePreview] = useState(''); // State for image preview
     const location = useLocation();
     const permissionData = location.state?.permissionData;
     const [columns, setColumns] = useState([]);
@@ -42,10 +42,10 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
     const MastersDistricts = mastersDistrictsState.mastersDistricts
     const MastersStates = mastersStatesState.mastersStates
     const OrganizationType = organizationTypeState.organizationType
-    const Organization = organizationState.organization
+    const Organization = organizationState.organization.data
 
-    console.log("tableData",tableData);
-    
+console.log("OrganizationType", Organization);
+
 
     useEffect(() => {
         dispatch(fetchOrganizationUnit());
@@ -93,9 +93,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
         if (action === 'Edit') {
             if (rowId) {
                 setFormData({
-                    // gu_id: rowId.gu_id || '',
-                    gu_id: rowId.gu_id || '',
-                    Present_organization_unit: rowId.id || '',
+                    organizationCode: rowId.id || '',
                     organizationType: rowId.email || '',
                     organizationName: rowId.name || '',
                     vhost: rowId.phone || '',
@@ -147,8 +145,39 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
         setOpenDel(open);
     };
 
+    // useEffect(() => {
+    //     if (tableData && tableData.length > 0) {
+    //         const keys = Object.keys(tableData[0]);
+    //         const cols = keys
+    //             .filter(key => key !== 'action')
+    //             .map(key => ({
+    //                 headerName: key.charAt(0).toUpperCase() + key.slice(1),
+    //                 field: key,
+    //                 sortable: true,
+    //                 filter: true,
+    //                 resizable: true,
+    //             }));
+
+    //         cols.push({
+    //             headerName: 'Action',
+    //             field: 'action',
+    //             cellRenderer: (params) => (
+    //                 <Button
+    //                     variant="outlined"
+    //                     sx={{ color: '#fff', backgroundColor: '#003566', fontSize: ".8rem" }}
+    //                     onClick={(event) => handlePopoverOpen(event, params.data)}
+    //                 >
+    //                     Actions
+    //                 </Button>
+    //             ),
+    //         });
+
+    //         setColumns(cols);
+    //     }
+    // }, [tableData]);
+
     useEffect(() => {
-        if (tableData && MastersDistricts.length && MastersStates.length && OrganizationType.length && Organization.data.length) {
+        if (tableData && MastersDistricts.length && MastersStates.length && OrganizationType.length) {
             const displayColumns = [
                 { field: 'ou_id', headerName: 'OU ID', sort: 'asc' },
                 { field: 'ou_name', headerName: 'OU Name' },
@@ -160,6 +189,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                 { field: 'ou_code', headerName: 'OU Code' },
                 { field: 'action', headerName: 'Action' }
             ];
+// console.log("Organization",Organization);
 
             const formattedColumns = displayColumns.map(col => {
                 if (col.field === 'ou_type') {
@@ -188,15 +218,15 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                         }
                     };
                 }
-                else if (col.field === 'organization_id') {
-                    return {
-                        ...col,
-                        valueGetter: (params) => {
-                            const match = Organization.data.find(item => item.id === params.data.organization_id);
-                            return match ? match.o_name : '';
-                        }
-                    };
-                }
+                // else if (col.field === 'organization_id') {
+                //     return {
+                //         ...col,
+                //         valueGetter: (params) => {
+                //             const match = Organization.find(item => item.id === params.data.organization_id);
+                //             return match ? match.o_name : '';
+                //         }
+                //     };
+                // }
                 else if (col.field === 'action') {
                     return {
                         ...col,
@@ -220,7 +250,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
 
             setColumns(formattedColumns);
         }
-    }, [tableData, MastersDistricts, MastersStates, OrganizationType, Organization]);
+    }, [tableData, MastersDistricts, MastersStates, OrganizationType , Organization]);
 
 
     const formatHeader = (field) => {
