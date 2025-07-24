@@ -3,10 +3,7 @@ import Popover from '@mui/material/Popover';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import {
-    Drawer, FormControl, InputLabel, Select, MenuItem, TextField, Button,
-    Typography, Box, Toolbar
-} from '@mui/material';
+import { Drawer, FormControl, InputLabel, Select, MenuItem, TextField, Button, Typography, Box, Toolbar } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMessage, faPen, faCheck, faPenToSquare, faEnvelope, faTrash, faTurnDown } from '@fortawesome/free-solid-svg-icons';
 import "./Dashboard.css";
@@ -20,14 +17,14 @@ import { fetchOrganizationUnit, fetchMastersDistricts, fetchMastersStates, fetch
 
 function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const [anchorEl, setAnchorEl] = useState(null);
-    const [selectedRowId, setSelectedRowId] = useState(null);
     const [showSelect, setShowSelect] = useState(false);
     const [open, setOpen] = useState(false);
     const [openNew, setOpenNew] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [openDel, setOpenDel] = useState(false);
-    const [age, setAge] = useState(''); // State for the dropdown (age selection)
-    const [imagePreview, setImagePreview] = useState(''); // State for image preview
+    const [age, setAge] = useState('');
+    const [selectedRowData, setSelectedRowData] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
     const location = useLocation();
     const permissionData = location.state?.permissionData;
     const [columns, setColumns] = useState([]);
@@ -42,10 +39,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
     const MastersDistricts = mastersDistrictsState.mastersDistricts
     const MastersStates = mastersStatesState.mastersStates
     const OrganizationType = organizationTypeState.organizationType
-    const Organization = organizationState.organization.data
-
-console.log("OrganizationType", Organization);
-
+    const OrganizationName = organizationState.organization.data
 
     useEffect(() => {
         dispatch(fetchOrganizationUnit());
@@ -57,77 +51,126 @@ console.log("OrganizationType", Organization);
     }, [dispatch]);
 
     const [formData, setFormData] = useState({
-        organizationCode: '',
-        organizationType: '',
-        organizationName: '',
-        vhost: '',
-        orgVisibility: '',
-        publicVisibility: ''
+        gu_id: '',
+        OU_ID: '',
+        OU_Name: '',
+        OU_Type: '',
+        Organisation: '',
+        State: '',
+        District: '',
+        OU_Address: '',
+        OU_Code: '',
+        Pin_Code: '',
+        Landline: '',
+        Website: '',
     });
 
+    console.log("formData", formData);
 
-    const handlePopoverOpen = (event, rowId) => {
+
+    const handlePopoverOpen = (event, rowData) => {
+        console.log("rowData", rowData);
+
         setAnchorEl(event.currentTarget);
-        setSelectedRowId(rowId);
+        setSelectedRowData(rowData);
     };
 
     const handlePopoverClose = () => {
         setAnchorEl(null);
-        setSelectedRowId(null);
+        setSelectedRowData(null);
     };
 
     const handleMenuItemClick = (action, rowId) => {
+        console.log("rowId", rowId);
+
         if (action === 'Send Sandes Message') {
             if (rowId) {
+                setSelectedRowData(rowId);
                 setFormData({
-                    organizationCode: rowId.id || '',
-                    organizationType: rowId.email || '',
-                    organizationName: rowId.name || '',
-                    vhost: rowId.phone || '',
-                    orgVisibility: rowId.city || '',
-                    publicVisibility: rowId.role || '',
+                    gu_id: rowId.gu_id || '',
+                    OU_ID: rowId.ou_id || '',
+                    OU_Name: rowId.ou_name || '',
+                    OU_Type: rowId.ou_type || '',
+                    Organisation: rowId.organization_id || '',
+                    State: rowId.state_id || '',
+                    District: rowId.district_id || '',
+                    OU_Address: rowId.ou_address || '',
+                    OU_Code: rowId.ou_code || '',
+                    Pin_Code: rowId.pin_code || '',
+                    Landline: rowId.landline || '',
+                    Website: rowId.website || '',
                 });
             }
-            setOpen(true); // Open the drawer when "Send Sandes Message" is clicked
+            setOpen(true);
         }
         if (action === 'Edit') {
             if (rowId) {
+                setSelectedRowData(rowId);
+                console.log("rowId", rowId);
+
                 setFormData({
-                    organizationCode: rowId.id || '',
-                    organizationType: rowId.email || '',
-                    organizationName: rowId.name || '',
-                    vhost: rowId.phone || '',
-                    orgVisibility: rowId.city || '',
-                    publicVisibility: rowId.role || '',
+                    gu_id: rowId.gu_id || '',
+                    Parent_OU:rowId.parent_ou || '',
+                    OU_ID: rowId.ou_id || '',
+                    OU_Name: rowId.ou_name || '',
+                    OU_Type: rowId.ou_type || '',
+                    Organisation: rowId.organization_id || '',
+                    State: rowId.state_id || '',
+                    District: rowId.district_id || '',
+                    OU_Address: rowId.ou_address || '',
+                    OU_Code: rowId.ou_code || '',
+                    Pin_Code: rowId.pin_code || '',
+                    Landline: rowId.landline || '',
+                    Website: rowId.website || '',
                 });
             }
-            setOpenEdit(true); // Open the drawer when "Send Sandes Message" is clicked
+            setOpenEdit(true);
         }
         if (action === 'Delete') {
             if (rowId) {
+                setSelectedRowData(rowId);
                 setFormData({
-                    organizationCode: rowId.id || '',
-                    organizationType: rowId.email || '',
-                    organizationName: rowId.name || '',
-                    vhost: rowId.phone || '',
-                    orgVisibility: rowId.city || '',
-                    publicVisibility: rowId.role || '',
+                    gu_id: rowId.gu_id || '',
+                    Parent_OU:rowId.parent_ou || '',
+                    OU_ID: rowId.ou_id || '',
+                    OU_Name: rowId.ou_name || '',
+                    OU_Type: rowId.ou_type || '',
+                    Organisation: rowId.organization_id || '',
+                    State: rowId.state_id || '',
+                    District: rowId.district_id || '',
+                    OU_Address: rowId.ou_address || '',
+                    OU_Code: rowId.ou_code || '',
                 });
             }
-            setOpenDel(true); // Open the drawer when "Send Sandes Message" is clicked
+            setOpenDel(true);
         }
-
-        // console.log(`Action: ${action} for Row ID: ${rowId}`);
         handlePopoverClose();
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Add form submission logic here (e.g., send message)
+
+        try {
+            const res = await dispatch(updateOrganization({ formData, rowId: selectedRowData }));
+
+            if (res.meta.requestStatus === 'fulfilled') {
+                setOpenEdit(false);
+                await dispatch(fetchOrganizationUnit());
+                toast.success("Organization Unit updated!");
+            } else {
+                toast.error("Update failed");
+            }
+        } catch (err) {
+            toast.error("Something went wrong");
+            console.error(err);
+        }
     };
 
     const handleChange = (event) => {
-        setAge(event.target.value);
+        dispatch(setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        }));
     };
 
     const toggleDrawerNew = (open) => () => {
@@ -145,39 +188,8 @@ console.log("OrganizationType", Organization);
         setOpenDel(open);
     };
 
-    // useEffect(() => {
-    //     if (tableData && tableData.length > 0) {
-    //         const keys = Object.keys(tableData[0]);
-    //         const cols = keys
-    //             .filter(key => key !== 'action')
-    //             .map(key => ({
-    //                 headerName: key.charAt(0).toUpperCase() + key.slice(1),
-    //                 field: key,
-    //                 sortable: true,
-    //                 filter: true,
-    //                 resizable: true,
-    //             }));
-
-    //         cols.push({
-    //             headerName: 'Action',
-    //             field: 'action',
-    //             cellRenderer: (params) => (
-    //                 <Button
-    //                     variant="outlined"
-    //                     sx={{ color: '#fff', backgroundColor: '#003566', fontSize: ".8rem" }}
-    //                     onClick={(event) => handlePopoverOpen(event, params.data)}
-    //                 >
-    //                     Actions
-    //                 </Button>
-    //             ),
-    //         });
-
-    //         setColumns(cols);
-    //     }
-    // }, [tableData]);
-
     useEffect(() => {
-        if (tableData && MastersDistricts.length && MastersStates.length && OrganizationType.length) {
+        if (tableData && MastersDistricts.length && MastersStates.length && OrganizationType.length && OrganizationName) {
             const displayColumns = [
                 { field: 'ou_id', headerName: 'OU ID', sort: 'asc' },
                 { field: 'ou_name', headerName: 'OU Name' },
@@ -189,7 +201,6 @@ console.log("OrganizationType", Organization);
                 { field: 'ou_code', headerName: 'OU Code' },
                 { field: 'action', headerName: 'Action' }
             ];
-// console.log("Organization",Organization);
 
             const formattedColumns = displayColumns.map(col => {
                 if (col.field === 'ou_type') {
@@ -218,15 +229,15 @@ console.log("OrganizationType", Organization);
                         }
                     };
                 }
-                // else if (col.field === 'organization_id') {
-                //     return {
-                //         ...col,
-                //         valueGetter: (params) => {
-                //             const match = Organization.find(item => item.id === params.data.organization_id);
-                //             return match ? match.o_name : '';
-                //         }
-                //     };
-                // }
+                else if (col.field === 'organization_id') {
+                    return {
+                        ...col,
+                        valueGetter: (params) => {
+                            const match = OrganizationName.find(item => item.id === params.data.organization_id);
+                            return match ? match.o_name : '';
+                        }
+                    };
+                }
                 else if (col.field === 'action') {
                     return {
                         ...col,
@@ -250,7 +261,7 @@ console.log("OrganizationType", Organization);
 
             setColumns(formattedColumns);
         }
-    }, [tableData, MastersDistricts, MastersStates, OrganizationType , Organization]);
+    }, [tableData, MastersDistricts, MastersStates, OrganizationType, OrganizationName]);
 
 
     const formatHeader = (field) => {
@@ -334,19 +345,19 @@ console.log("OrganizationType", Organization);
                         <Typography margin={2} >OU for POC</Typography>
                         <hr />
                         {permissionData.send_sandes_message === "active" && (
-                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Send Sandes Message', selectedRowId)}>
+                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Send Sandes Message', selectedRowData)}>
                                 <FontAwesomeIcon icon={faEnvelope} className='mr-1' style={{ color: "#158cba" }} />  <ListItemText primary="Send Sandes Message" />
                             </ListItem>
                         )}
                         {permissionData.edit === "active" && (
-                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Edit', selectedRowId)}>
+                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Edit', selectedRowData)}>
                                 <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faPenToSquare} />
                                 <ListItemText primary="Edit" />
                             </ListItem>
                         )}
 
                         {permissionData.delete === "active" && (
-                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Delete', selectedRowId)}>
+                            <ListItem button className='cursor-pointer' onClick={() => handleMenuItemClick('Delete', selectedRowData)}>
                                 <FontAwesomeIcon className='mr-1' icon={faTrash} style={{ color: "#ff0000b8" }} />
                                 <ListItemText primary="Delete" />
                             </ListItem>
@@ -360,7 +371,7 @@ console.log("OrganizationType", Organization);
                                 component="a"
                                 className='cursor-pointer'
                                 href="/MemberPage"
-                                onClick={() => handleMenuItemClick('Member wise status', selectedRowId)}
+                                onClick={() => handleMenuItemClick('Member wise status', selectedRowData)}
                             >
                                 <FontAwesomeIcon icon={faCheck} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Member wise status" />
                             </ListItem>
@@ -372,7 +383,7 @@ console.log("OrganizationType", Organization);
                                 component="a"
                                 className='cursor-pointer'
                                 href="/HeatMap"
-                                onClick={() => handleMenuItemClick('Heat Map', selectedRowId)}
+                                onClick={() => handleMenuItemClick('Heat Map', selectedRowData)}
                             >
                                 <FontAwesomeIcon icon={faPen} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Heat Map based on chat activity" />
                             </ListItem>
@@ -457,6 +468,7 @@ console.log("OrganizationType", Organization);
                 </div>
 
             </Drawer>
+
             {/* Drawer for Send Sandes Message */}
             <Drawer anchor="top" open={open} onClose={toggleDrawer(false)}>
                 <Box
@@ -572,13 +584,13 @@ console.log("OrganizationType", Organization);
                         <Typography variant="h5" mb={2} color='#003566' fontWeight="700">Update Organization Unit [Ministry for POC]</Typography>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form>
+                    <form onSubmit={handleSubmit}>
 
                         <Typography variant="h6" mb={2} mt={2} textAlign="center" color='#003566'>Update Organization for POC</Typography>
 
                         <div className="row">
                             <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
+                                <select class="form-select" aria-label="Default select example" value={formData.Parent_OU} onChange={handleChange}>
                                     <option selected>Parent organization unit</option>
                                     <option value="1">One</option>
                                     <option value="2">Two</option>
@@ -586,7 +598,7 @@ console.log("OrganizationType", Organization);
                                 </select>
                             </div>
                             <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
+                                <select class="form-select" aria-label="Default select example" value={formData.OU_Type} onChange={handleChange}>
                                     <option selected>Organization unit type</option>
                                     <option value="1">One</option>
                                     <option value="2">Two</option>
@@ -594,7 +606,7 @@ console.log("OrganizationType", Organization);
                                 </select>
                             </div>
                             <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
+                                <select class="form-select" aria-label="Default select example" value={formData.State} onChange={handleChange}>
                                     <option selected>State</option>
                                     <option value="1">One</option>
                                     <option value="2">Two</option>
@@ -602,7 +614,7 @@ console.log("OrganizationType", Organization);
                                 </select>
                             </div>
                             <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
+                                <select class="form-select" aria-label="Default select example" value={formData.District} onChange={handleChange}>
                                     <option selected>District</option>
                                     <option value="1">One</option>
                                     <option value="2">Two</option>
@@ -610,26 +622,26 @@ console.log("OrganizationType", Organization);
                                 </select>
                             </div>
                             <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="O u code" aria-label="default input example" />
+                                <input class="form-control" type="text" placeholder="O u code" value={formData.OU_Code} onChange={handleChange} aria-label="default input example" />
                             </div>
 
                             <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="O u name" aria-label="default input example" />
+                                <input class="form-control" type="text" placeholder="O u name" value={formData.OU_Name} onChange={handleChange} aria-label="default input example" />
                             </div>
 
                             <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="Address" aria-label="default input example" />
+                                <input class="form-control" type="text" placeholder="Address" value={formData.OU_Address} onChange={handleChange} aria-label="default input example" />
                             </div>
 
                             <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="Pin code" aria-label="default input example" />
+                                <input class="form-control" type="text" placeholder="Pin code" value={formData.Pin_Code} onChange={handleChange} aria-label="default input example" />
                             </div>
                             <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="Landline" aria-label="default input example" />
+                                <input class="form-control" type="text" placeholder="Landline" value={formData.Landline} onChange={handleChange} aria-label="default input example" />
                             </div>
 
                             <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="Website" aria-label="default input example" />
+                                <input class="form-control" type="text" placeholder="Website" value={formData.Website} onChange={handleChange} aria-label="default input example" />
                             </div>
 
                         </div>

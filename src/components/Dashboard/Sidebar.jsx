@@ -252,7 +252,7 @@ const Sidebar = ({
 
         {userRole == 1 ?
           <>
-            <ListItem
+            {/* <ListItem
               button
               component={Link}
               to="/sliderMangement"
@@ -264,8 +264,8 @@ const Sidebar = ({
                 <CollectionsIcon />
               </ListItemIcon>
               {(desktopOpen || isMobile) && <ListItemText sx={{ color: "#fff" }} primary="Slider Management" />}
-            </ListItem>
-            <ListItem
+            </ListItem> */}
+            {/* <ListItem
               button
               component={Link}
               to="/usermanagement"
@@ -277,7 +277,7 @@ const Sidebar = ({
                 <ManageAccountsIcon />
               </ListItemIcon>
               {(desktopOpen || isMobile) && <ListItemText sx={{ color: "#fff" }} primary="User Management" />}
-            </ListItem>
+            </ListItem> */}
 
             <ListItem
               button

@@ -39,8 +39,6 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     const [selectedRowData, setSelectedRowData] = useState(null); // Updated
     const [openNew, setOpenNew] = useState(false);
 
-    console.log("MinistryData", MinistryData, organizationType);
-
 
     useEffect(() => {
         dispatch(fetchOrganization());
@@ -86,9 +84,6 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         orgVisibility: '',
         publicVisibility: ''
     });
-
-    console.log("formData", formData);
-
 
     const handlePopoverOpen = (event, rowData) => {
         setAnchorEl(event.currentTarget);
