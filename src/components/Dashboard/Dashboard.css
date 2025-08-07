@@ -1,0 +1,73 @@
+.zoom-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.zoom-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.Dashbtn:hover {
+    color: #fff;
+}
+
+td {
+    color: #000000;
+}
+
+th {
+    color: #ffffff;
+
+}
+
+.ag-center-cols-viewport, .ag-header-viewport{
+    background-color: #003566;
+}
+.ag-header-group-cell-label, .ag-cell-label-container{
+    color: #fff;
+}
+.ag-icon{
+    color: #fff !important;
+}
+
+
+
+.bgc-1 {
+    background: linear-gradient(to right, rgba(249, 178, 106, 0.4), rgba(255, 255, 255, 0.2), rgba(22, 138, 67, 0.3));
+    border-radius: 24px;
+    border-radius: 12px;
+}
+
+.card-text {
+    color: #003566;
+    font-weight: bold;
+}
+
+.table_head {
+    background-color: #000000;
+    font-weight: bold;
+}
+
+.btn-bg-1 {
+    background-color: #003566 !important;
+}
+.ag-overlay-no-rows-center{
+    color: #fff;
+}
+
+
+.ag-paging-page-summary-panel{
+background-color: #003566;
+color: #fff;
+}

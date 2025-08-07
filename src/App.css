@@ -1,0 +1,21 @@
+@plugin "daisyui";
+
+.css-1tsblz7-MuiTypography-root-MuiTimelineOppositeContent-root {
+    display: none;
+}
+
+.css-10d30g3-MuiPaper-root-MuiDialog-paper {
+    max-width: 100% !important;
+}
+
+.css-19do60a-MuiDialog-container {
+    height: auto !important;
+}
+
+.modal-dialog {
+    max-width: 90%;
+}
+
+.col-md-1 {
+    width: 10% !important;
+}
