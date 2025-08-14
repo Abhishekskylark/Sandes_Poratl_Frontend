@@ -180,13 +180,11 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         if (tableData && organizationType.length && MinistryData.length) {
             const displayColumns = [
                 { field: 'id', headerName: 'ID', sort: 'asc' },
+                { field: 'ministry_id', headerName: 'Ministry' },
+                { field: 'organization_code', headerName: 'Organisation Code' },
                 { field: 'o_name', headerName: 'O Name' },
                 { field: 'organisation_type_id', headerName: 'Organisation Type' },
-                { field: 'organization_code', headerName: 'Organisation Code' },
-                { field: 'ministry_id', headerName: 'Ministry' },
                 { field: 'vhost', headerName: 'Vhost' },
-                // { field: 'is_o_visibility', headerName: 'O Visibility' },
-                // { field: 'is_public_visibility', headerName: 'Public Visibility' },
                 { field: 'action', headerName: 'Action' }
             ];
 
@@ -265,7 +263,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                         Manage Organization
                     </Typography>
                     <div className="button">
-                        {permissionData.organisation_list == "active" ?
+                        {/* {permissionData.organisation_list == "active" ?
                             <button
                                 type="button"
                                 className="btn btn-primary mr-3 btn-bg-1"
@@ -273,7 +271,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                             >
                                 Filter
                             </button> :
-                            <></>}
+                            <></>} */}
                         {permissionData.add_organisation == "active" ?
                             <button type="button" className="btn btn-success" onClick={toggleDrawerNew(true)}>
                                 + New
@@ -346,34 +344,34 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
 
                     </div>
                 </div>
-
+{/* 
                 {showSelect && (
 
                     <FormControl fullWidth className='mb-3' variant="outlined" style={{ width: '300px' }}>
-                        <InputLabel id="Select an option">Select an option</InputLabel>
+                        <InputLabel id="Select an option">Select</InputLabel>
                         <Select
-                            labelId="Select an option"
+                            labelId="Select"
                             defaultValue=""
-                            label="Select an option"
+                            label="Select"
                         >
-                            <MenuItem value="1">One</MenuItem>
-                            <MenuItem value="2">Two</MenuItem>
-                            <MenuItem value="3">Three</MenuItem>
+                            <MenuItem value="1">Organization Type</MenuItem>
+                            <MenuItem value="2">Organization Code</MenuItem>
+                            <MenuItem value="3">Organization</MenuItem>
                         </Select>
                     </FormControl>
                 )}
+ */}
 
-
-                    <div className="ag-theme-alpine" style={{ height: 539, width: '100%', padding: '10px', borderRadius: '10px' }}>
-                        <AgGridReact
-                            rowData={permissionData.organisation_list === "active" ? tableData : []}
-                            columnDefs={columns}
-                            defaultColDef={{ sortable: true, filter: true, resizable: true }}
-                            pagination={true}
-                            paginationPageSize={10}
-                            animateRows={true}
-                        />
-                    </div>
+                <div className="ag-theme-alpine" style={{ height: 539, width: '100%', padding: '10px', borderRadius: '10px' }}>
+                    <AgGridReact
+                        rowData={permissionData.organisation_list === "active" ? tableData : []}
+                        columnDefs={columns}
+                        defaultColDef={{ sortable: true, filter: true, resizable: true }}
+                        pagination={true}
+                        paginationPageSize={10}
+                        animateRows={true}
+                    />
+                </div>
 
 
                 <Popover

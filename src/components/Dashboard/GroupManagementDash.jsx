@@ -23,15 +23,15 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
     const [selectedRowId, setSelectedRowId] = useState(null);
     const [showSelect, setShowSelect] = useState(false);
     const [openNew, setOpenNew] = useState(false);
-    const [open, setOpen] = useState(false); // State to control Drawer
+    const [open, setOpen] = useState(false); 
     const [openProfile, setOpenProfile] = useState(false);
     const [openDetails, setOpenDetails] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [openCover, setOpenCover] = useState(false);
     const [openGroup, setOpenGroup] = useState(false);
     const [openOU, setOpenOU] = useState(false);
-    const [age, setAge] = useState(''); // State for the dropdown (age selection)
-    const [imagePreview, setImagePreview] = useState(''); // State for image preview
+    const [age, setAge] = useState(''); 
+    const [imagePreview, setImagePreview] = useState(''); 
     const [imagePreviewProfile, setImagePreviewProfile] = useState('');
     const [filteredTableData, setFilteredTableData] = useState([]);
 
@@ -91,9 +91,6 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                 { field: 'organisation', headerName: 'Organisation' },
                 { field: 'parent_ou', headerName: 'Organisation Unit' },
                 { field: 'title', headerName: 'Group Title' },
-                // { field: 'vhost', headerName: 'Vhost' },
-                // { field: 'is_o_visibility', headerName: 'O Visibility' },
-                // { field: 'is_public_visibility', headerName: 'Public Visibility' },
                 { field: 'action', headerName: 'Action' }
             ];
 
@@ -163,7 +160,6 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
             .replace(/_/g, ' ')
             .replace(/\b\w/g, char => char.toUpperCase());
     };
-
 
     const handleMenuItemClick = (action, rowId) => {
         if (action === 'Send Sandes Message') {
@@ -260,7 +256,6 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
         handlePopoverClose();
     };
 
-    // Form handling
     const handleSubmit = (e) => {
         e.preventDefault();
         // Add form submission logic here (e.g., send message)
@@ -352,13 +347,13 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                         Group Management
                     </Typography>
                     <div className="button">
-                        <button
+                        {/* <button
                             type="button"
                             className="btn btn-primary mr-3 btn-bg-1"
                             onClick={() => setShowSelect((prev) => !prev)} // Toggle filter dropdown
                         >
                             Filter
-                        </button>
+                        </button> */}
 
                         <button type="button" class="btn btn-success" onClick={toggleDrawerNew(true)}>
                             + New
@@ -367,13 +362,13 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                     </div>
                 </div>
 
-                {showSelect && (
+                {/* {showSelect && (
                     <select className="form-select mt-2 mb-3" style={{ width: '300px' }}>
                         <option value="">Select an option</option>
                         <option value="1">Option 1</option>
                         <option value="2">Option 2</option>
                     </select>
-                )}
+                )} */}
 
                 <div className="ag-theme-alpine" style={{ height: 539, width: '100%', padding: '10px', borderRadius: '10px' }}>
                     <AgGridReact
@@ -461,135 +456,12 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                     </List>
                 </Popover>
 
-                {/* <div className="table-responsive">
-                    <table className="table table-striped table-bordered bgc-1">
-                        <thead className="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>City</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentRows.map((row) => (
-                                <tr key={row.id}>
-                                    <td>{row.id}</td>
-                                    <td>{row.name}</td>
-                                    <td>{row.email}</td>
-                                    <td>{row.phone}</td>
-                                    <td>{row.city}</td>
-                                    <td>{row.role}</td>
-                                    <td>{row.status}</td>
-                                    <td>
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            className='btn-bg-1'
-                                            sx={{ color: "#fff" }}
-                                            onClick={(event) => handlePopoverOpen(event, row.id)}
-                                        >
-                                            Actions
-                                        </Button>
-                                        <Popover
-                                            open={Boolean(anchorEl) && selectedRowId === row.id}
-                                            anchorEl={anchorEl}
-                                            onClose={handlePopoverClose}
-                                            anchorOrigin={{
-                                                vertical: 'bottom',
-                                                horizontal: 'left',
-                                            }}
-                                            transformOrigin={{
-                                                vertical: 'top',
-                                                horizontal: 'left',
-                                            }}
-                                        >
-
-                                            <Typography margin={2} >OU for POC</Typography>
-                                            <hr />
-                                            <List>
-                                                <ListItem
-                                                    button
-                                                    onClick={() => handleMenuItemClick('View', row.id)}
-                                                >
-                                                    <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faMagnifyingGlass} />  <ListItemText primary="View" />
-                                                </ListItem>
-                                                <ListItem
-                                                    button
-                                                    onClick={() => handleMenuItemClick('Edit', row.id)}
-                                                >
-                                                    <FontAwesomeIcon className='mr-1' style={{ color: "#158cba" }} icon={faPenToSquare} />  <ListItemText primary="Edit" />
-                                                </ListItem>
-
-                                                <ListItem
-                                                    button
-                                                    onClick={() => handleMenuItemClick('Profile Photo', row.id)}
-                                                >
-                                                    <FontAwesomeIcon className='mr-1' style={{ color: "green" }} icon={faCamera} />  <ListItemText primary="Profile Photo" />
-                                                </ListItem>
-                                                <ListItem
-                                                    button
-
-                                                    onClick={() => handleMenuItemClick('Cover Image', row.id)}
-                                                >
-                                                    <FontAwesomeIcon icon={faImage} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Cover Image" />
-                                                </ListItem>
-                                                <hr />
-                                                <ListItem
-                                                    button
-                                                    component="a"
-                                                    href="/GroupAddMemebr"
-                                                    onClick={() => handleMenuItemClick('Add Member', row.id)}
-                                                >
-                                                    <FontAwesomeIcon icon={faUsersLine} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Add Member" />
-                                                </ListItem>
-                                                <ListItem
-                                                    button
-                                                    // component="a"
-                                                    // href="/MemberPage"
-                                                    onClick={() => handleMenuItemClick('Manage Members', row.id)}
-                                                >
-                                                    <FontAwesomeIcon icon={faRightFromBracket} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Manage Members" />
-                                                </ListItem>
-
-                                                <ListItem
-                                                    button
-
-                                                    onClick={() => handleMenuItemClick('Disperse Group', row.id)}
-                                                >
-                                                    <FontAwesomeIcon icon={faRecycle} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Disperse Group" />
-                                                </ListItem>
-                                                <ListItem
-                                                    button
-
-                                                    onClick={() => handleMenuItemClick('Change OU', row.id)}
-                                                >
-                                                    <FontAwesomeIcon icon={faRecycle} className='mr-1' style={{ color: "#158cba" }} /> <ListItemText primary="Change OU" />
-                                                </ListItem>
-
-                                                <ListItem button onClick={() => handleMenuItemClick('Send Sandes Message', row.id)}>
-                                                    <FontAwesomeIcon icon={faEnvelope} className='mr-1' style={{ color: "#158cba" }} />  <ListItemText primary="Send Sandes Message" />
-                                                </ListItem>
-                                            </List>
-                                        </Popover>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {renderPagination()} */}
+              
             </div>
 
             <Drawer anchor="top" open={openNew} onClose={toggleDrawerNew(false)}>
                 <div class="modal-content mt-14" style={{ padding: "2%" }}>
                     <div class="modal-header">
-                        {/* <h5 class="modal-title" id="exampleModalLabel">New Organization Unit [Ministry for POC]</h5> */}
                         <Typography variant="h5" mb={2} color='#003566' fontWeight="700">Group Registration Form</Typography>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -1143,7 +1015,6 @@ function GroupManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
 
                 </Box>
             </Drawer>
-
 
         </Box>
     );

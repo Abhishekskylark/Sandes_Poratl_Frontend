@@ -413,13 +413,13 @@ function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                         Employee/Login Management
                     </Typography>
                     <div className="button">
-                        <button
+                        {/* <button
                             type="button"
                             className="btn btn-primary mr-3 btn-bg-1"
                             onClick={() => setShowSelect((prev) => !prev)} // Toggle filter dropdown
                         >
                             Filter
-                        </button>
+                        </button> */}
                         <button
                             type="button"
                             className="btn btn-primary mr-3 btn-bg-1"
@@ -442,13 +442,13 @@ function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                     </div>
                 </div>
 
-                {showSelect && (
+                {/* {showSelect && (
                     <select className="form-select mt-2 mb-3" style={{ width: '300px' }}>
                         <option value="">Select an option</option>
                         <option value="1">Option 1</option>
                         <option value="2">Option 2</option>
                     </select>
-                )}
+                )} */}
 
                 <div className="ag-theme-alpine" style={{ height: 539, width: '100%', padding: '10px', borderRadius: '10px' }}>
                     <AgGridReact
@@ -1245,7 +1245,7 @@ function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                                 </tr>
                             </thead>
                             <tbody>
-                                {currentRows.map((row) => (
+                                {/* {currentRows.map((row) => (
                                     <tr key={row.id}>
                                         <td>{row.id}</td>
                                         <td>{row.name}</td>
@@ -1256,12 +1256,12 @@ function LoginManagementDash({ drawerWidth, collapsedDrawerWidth, desktopOpen })
                                         <td>{row.status}</td>
 
                                     </tr>
-                                ))}
+                                ))} */}
                             </tbody>
                         </table>
                     </div>
 
-                    {renderPagination()}
+                    {/* {renderPagination()} */}
                 </Box>
             </Drawer>
 

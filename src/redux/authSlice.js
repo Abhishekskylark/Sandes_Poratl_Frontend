@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { UAParser } from "ua-parser-js";
 import axios from "axios";
-import { toast } from "react-toastify";
 
 /* ---------------------------- AUTH SLICE ---------------------------- */
 
@@ -826,23 +825,121 @@ const organizationUnitSlice = createSlice({
   },
 });
 
+/* ---------------------------- CREATE Organization Unit  ---------------------------- */
+
+// 🔹 // Async thunk to CREATE Organization Unit
+export const createOrganizationUnit = createAsyncThunk(
+  'organizationUnit/createOrganizationUnit',
+  async (formData, thunkAPI) => {
+    try {
+      const apiData = {
+        parent_ou: formData.Parent_OU || '',
+        ou_id: formData.OU_ID || '',
+        ou_name: formData.OU_Name || '',
+        ou_type: formData.OU_Type || '',
+        organization_id: formData.organization_id || '',
+        state_id: formData.State || '',
+        district_id: formData.District || '',
+        ou_address: formData.OU_Address || '',
+        ou_code: formData.OU_Code || '',
+        pin_code: formData.Pin_Code || '',
+        landline: formData.Landline || '',
+        website: formData.Website || '',
+        // gu_id optional: backend khud generate karega
+      };
+
+      const response = await axios.post(
+        `http://localhost:8000/organization_unit`,
+        apiData
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Create API error:", error?.response || error);
+      return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
+    }
+  }
+);
+
+const createorganizationUnitSlice = createSlice({
+  name: 'organizationUnit',
+  initialState: {
+    formData: {
+      organizationCode: '',
+      organizationType: '',
+      organizationName: '',
+      vhost: '',
+      orgVisibility: '',
+      publicVisibility: '',
+    },
+    loading: false,
+    error: null,
+  },
+  reducers: {
+    setFormData: (state, action) => {
+      state.formData = action.payload;
+    },
+    clearFormData: (state) => {
+      state.formData = {
+        organizationCode: '',
+        organizationType: '',
+        organizationName: '',
+        vhost: '',
+        orgVisibility: '',
+        publicVisibility: '',
+      };
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // create
+      .addCase(createOrganizationUnit.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createOrganizationUnit.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(createOrganizationUnit.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // update
+      .addCase(updateOrganizationUnit.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateOrganizationUnit.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateOrganizationUnit.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
+
+
 /* ---------------------------- Update Organization Unit  ---------------------------- */
 
-// Async thunk to Update Organization Unit
 export const updateOrganizationUnit = createAsyncThunk(
   'organizationUnit/updateOrganizationUnit',
   async ({ formData, rowId }, thunkAPI) => {
     try {
       const apiData = {
         ...rowId,
-        organization_code: formData.organizationCode || rowId.organization_code,
-        organization_type_id: formData.organizationType || rowId.organization_type_id,
-        o_name: formData.organizationName || rowId.o_name,
-        is_o_visibility: formData.orgVisibility,
-        is_public_visibility: formData.publicVisibility,
-        vhost_id: formData.vhost_id || rowId.vhost_id,
+        parent_ou: formData.Parent_OU ?? rowId.parent_ou,
+        ou_id: formData.OU_ID ?? rowId.ou_id,
+        ou_name: formData.OU_Name ?? rowId.ou_name,
+        ou_type: formData.OU_Type ?? rowId.ou_type,
+        organization_id: formData.Organisation ?? rowId.organization_id,
+        state_id: formData.State ?? rowId.state_id,
+        district_id: formData.District ?? rowId.district_id,
+        ou_address: formData.OU_Address ?? rowId.ou_address,
+        ou_code: formData.OU_Code ?? rowId.ou_code,
+        pin_code: formData.Pin_Code ?? rowId.pin_code,
+        landline: formData.Landline ?? rowId.landline,
+        website: formData.Website ?? rowId.website,
       };
-
 
       const response = await axios.put(
         `http://localhost:8000/organization_unit/${formData.gu_id}`,
@@ -850,10 +947,12 @@ export const updateOrganizationUnit = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
+      console.error("Update API error:", error?.response || error); // 🔹 real error
       return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
     }
   }
 );
+
 
 const UpdateorganizationUnitSlice = createSlice({
   name: 'organizationUnit',
@@ -908,8 +1007,6 @@ export const deleteOrganizationUnit = createAsyncThunk(
   async (gu_id, thunkAPI) => {
     try {
       const response = await axios.delete(`http://localhost:8000/organization_unit/${gu_id}`);
-      console.log("response", response.data);
-
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
@@ -992,17 +1089,48 @@ const mastersStatesSlice = createSlice({
 /* ---------------------------- Fetch Masters Districts  ---------------------------- */
 
 // Async thunk to fetch Masters Districts
+
 export const fetchMastersDistricts = createAsyncThunk(
-  "mastersDistricts/fetchmastersDistricts",
-  async (_, { rejectWithValue }) => {
+  "mastersDistricts/fetchMastersDistricts",
+  async (state_code, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/masters_districts");
+      let url = "http://localhost:8000/masters_districts";
+      if (state_code) {
+        url += `?state_id=${state_code}`;
+      }
+      const response = await axios.get(url);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to fetch Masters Districts");
     }
   }
 );
+
+
+
+// const mastersDistrictsSlice = createSlice({
+//   name: "mastersDistricts",
+//   initialState: {
+//     mastersDistricts: [],
+//     loading: false,
+//     error: null,
+//   },
+//   reducers: {},
+//   extraReducers: (builder) => {
+//     builder
+//       .addCase(fetchMastersDistricts.pending, (state) => {
+//         state.loading = true;
+//       })
+//       .addCase(fetchMastersDistricts.fulfilled, (state, action) => {
+//         state.loading = false;
+//         state.mastersDistricts = action.payload;
+//       })
+//       .addCase(fetchMastersDistricts.rejected, (state, action) => {
+//         state.loading = false;
+//         state.error = action.payload;
+//       });
+//   },
+// });
 
 const mastersDistrictsSlice = createSlice({
   name: "mastersDistricts",
@@ -1016,6 +1144,7 @@ const mastersDistrictsSlice = createSlice({
     builder
       .addCase(fetchMastersDistricts.pending, (state) => {
         state.loading = true;
+        state.mastersDistricts = []; // 🔹 Purana data clear
       })
       .addCase(fetchMastersDistricts.fulfilled, (state, action) => {
         state.loading = false;
@@ -1273,7 +1402,7 @@ export const { clearModuleError } = moduleSlice.actions;
 export const moduleReducer = moduleSlice.reducer;
 export const captchaReducer = captchaSlice.reducer;
 export const usersReducer = usersSlice.reducer;
-export const statisticsReducer=statisticsSlice.reducer;
+export const statisticsReducer = statisticsSlice.reducer;
 export const registrationReducer = registrationSlice.reducer;
 export const messageCountReducer = messageCountSlice.reducer;
 export const employeeReducer = employeeSlice.reducer;
@@ -1291,6 +1420,7 @@ export const importEmployeeReducer = importEmployeeSlice.reducer;
 export const groupReducer = groupSlice.reducer;
 export const ministryReducer = ministrySlice.reducer;
 export const organizationTypeReducer = organizationTypeSlice.reducer;
+export const createorganizationUnitReducer = createorganizationUnitSlice.reducer;
 export const updateOrganizationReducer = UpdateorganizationSlice.reducer; // camelCase preferred
 export const updateOrganizationUnitReducer = UpdateorganizationUnitSlice.reducer;
 export const { setVerifiedFalse, setVerifiedTrue } = verifyCaptchaSlice.actions;
@@ -1299,6 +1429,5 @@ export const authReducer = authSlice.reducer;
 export const { setFormData, clearFormData } = UpdateorganizationSlice.actions;
 export const { clearDeleteStatus } = deleteOrganizationSlice.actions;
 export const deleteOrganizationReducer = deleteOrganizationSlice.reducer;
-// export const { setFormData, clearFormData } = UpdateorganizationSlice.actions;
-// export const { clearDeleteStatus } = deleteOrganizationSlice.actions;
-// export const deleteOrganizationReducer = deleteOrganizationSlice.reducer;
+export const deleteOrganizationUnitReducer = deleteOrganizationUnitSlice.reducer;
+

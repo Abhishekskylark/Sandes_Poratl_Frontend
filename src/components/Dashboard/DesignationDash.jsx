@@ -11,7 +11,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
 import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from "react-redux";
-import { fetchEmployees, fetchDesignation, fetchMinistry, fetchOrganization } from "../../redux/authSlice";
+import {  fetchDesignation, fetchMinistry, fetchOrganization } from "../../redux/authSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLocation } from 'react-router-dom';
 
@@ -192,26 +192,26 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                         Manage Designation
                     </Typography>
                     <div className="button">
-                        <button
+                        {/* <button
                             type="button"
                             className="btn btn-primary mr-3 btn-bg-1"
                             onClick={() => setShowSelect((prev) => !prev)}
                         >
                             Filter
-                        </button>
+                        </button> */}
                         <button type="button" className="btn btn-success" onClick={toggleDrawerNew(true)}>
                             + New
                         </button>
                     </div>
                 </div>
 
-                {showSelect && (
+                {/* {showSelect && (
                     <select className="form-select mt-2 mb-3" style={{ width: '300px' }}>
                         <option value="">Select an option</option>
                         <option value="1">Option 1</option>
                         <option value="2">Option 2</option>
                     </select>
-                )}
+                )} */}
 
                 <div className="ag-theme-alpine" style={{ height: 539, width: '100%', padding: '10px', borderRadius: '10px' }}>
 

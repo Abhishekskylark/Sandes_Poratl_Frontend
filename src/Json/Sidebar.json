@@ -9,7 +9,7 @@
                     "edit": "active",
                     "organisation_list": "active",
                     "delete": "active",
-                    "daily_chat_statistics": "inactive",
+                    "daily_chat_statistics": "active",
                     "percapita_statistics": "active",
                     "organization_unit_wise_statistics": "active",
                     "top/buttom_reports": "active",

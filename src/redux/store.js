@@ -24,6 +24,8 @@ import {
   registrationGraphReducer,
   importEmployeeReducer,
   memberReducer,
+  createorganizationUnitReducer,
+  deleteOrganizationUnitReducer,
 } from './authSlice';
 
 const store = configureStore({
@@ -49,8 +51,10 @@ const store = configureStore({
     group: groupReducer,
     ministry: ministryReducer,
     organizationType: organizationTypeReducer,
+    createorganizationUnit:createorganizationUnitReducer,
     updateOrganization: updateOrganizationReducer,
     deleteOrganization:deleteOrganizationReducer,
+    deleteOrganizationUnit: deleteOrganizationUnitReducer,
     auth: authReducer,
   },
 });

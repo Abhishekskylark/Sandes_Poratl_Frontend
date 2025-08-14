@@ -37,11 +37,8 @@ function GroupAddMemebrDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) 
         setSelectedRowId(null);
     };
 
-
-    // Form handling
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Add form submission logic here (e.g., send message)
     };
 
     const handleChange = (event) => {
@@ -181,7 +178,7 @@ function GroupAddMemebrDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) 
                         <button
                             type="button"
                             className="btn btn-primary mr-3 btn-bg-1"
-                            onClick={() => setShowSelect((prev) => !prev)} // Toggle filter dropdown
+                            onClick={() => setShowSelect((prev) => !prev)} 
                         >
                             Filter
                         </button>

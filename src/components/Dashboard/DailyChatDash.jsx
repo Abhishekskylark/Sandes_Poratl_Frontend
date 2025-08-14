@@ -26,38 +26,30 @@ function DailyChatDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const [selectedRowId, setSelectedRowId] = useState(null);
     const rowsPerPage = 5;
 
-    // Calculate total pages
     const totalPages = Math.ceil(tableData.length / rowsPerPage);
 
-    // Get data for current page
     const indexOfLastRow = currentPage * rowsPerPage;
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     const currentRows = tableData.slice(indexOfFirstRow, indexOfLastRow);
 
-    // Handle page change
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
 
-    // Handle popover open
     const handlePopoverOpen = (event, rowId) => {
         setAnchorEl(event.currentTarget);
         setSelectedRowId(rowId);
     };
 
-    // Handle popover close
     const handlePopoverClose = () => {
         setAnchorEl(null);
         setSelectedRowId(null);
     };
 
-    // Handle menu item click
     const handleMenuItemClick = (action, rowId) => {
-        // console.log(`Action: ${action} for Row ID: ${rowId}`);
         handlePopoverClose();
     };
 
-    // Render pagination buttons
     const renderPagination = () => {
         const pageNumbers = [];
         for (let i = 1; i <= totalPages; i++) {
@@ -127,7 +119,7 @@ function DailyChatDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                                 <th>City</th>
                                 <th>Role</th>
                                 <th>Status</th>
-                                {/* <th>Action</th> */}
+                               
                             </tr>
                         </thead>
                         <tbody>

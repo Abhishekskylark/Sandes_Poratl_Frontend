@@ -13,16 +13,17 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
 import { useDispatch, useSelector } from "react-redux";
-import { fetchOrganizationUnit, fetchMastersDistricts, fetchMastersStates, fetchOrganizationType, fetchOrganization } from "../../redux/authSlice";
+import { fetchOrganizationUnit, fetchMastersDistricts, fetchMastersStates, fetchOrganizationType, fetchOrganization, updateOrganizationUnit, createOrganizationUnit, deleteOrganizationUnit } from "../../redux/authSlice";
+import { toast } from 'react-toastify';
 
 function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const [anchorEl, setAnchorEl] = useState(null);
-    const [showSelect, setShowSelect] = useState(false);
     const [open, setOpen] = useState(false);
     const [openNew, setOpenNew] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [openDel, setOpenDel] = useState(false);
-    const [age, setAge] = useState('');
+    const [editMode, setEditMode] = useState('');
+    const [deleteMode, setDeleteMode] = useState('');
     const [selectedRowData, setSelectedRowData] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
     const location = useLocation();
@@ -32,14 +33,17 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
     const organizationUnitState = useSelector((state) => state.organizationUnit);
     const mastersDistrictsState = useSelector((state) => state.masterDistricts);
     const mastersStatesState = useSelector((state) => state.masterStates);
-    const organizationTypeState = useSelector((state) => state.organizationType);
     const organizationState = useSelector((state) => state.organization);
-
+    const organizationTypeState = useSelector((state) => state.organizationType);
     const tableData = organizationUnitState.organizationUnit.data
     const MastersDistricts = mastersDistrictsState.mastersDistricts
     const MastersStates = mastersStatesState.mastersStates
-    const OrganizationType = organizationTypeState.organizationType
     const OrganizationName = organizationState.organization.data
+    const OrganizationType = organizationTypeState.organizationType
+
+
+    console.log("tableData", tableData);
+
 
     useEffect(() => {
         dispatch(fetchOrganizationUnit());
@@ -47,6 +51,17 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
         dispatch(fetchMastersStates());
         dispatch(fetchOrganizationType());
         dispatch(fetchOrganization());
+        dispatch(createOrganizationUnit(formData))
+            .unwrap()
+            .then((res) => {
+                console.log("Create Success", res);
+                dispatch(fetchOrganizationUnit()); // list refresh
+                setOpenNew(false); // drawer close
+            })
+            .catch((err) => {
+                console.error("Create Failed", err);
+            });
+
 
     }, [dispatch]);
 
@@ -64,6 +79,9 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
         Landline: '',
         Website: '',
     });
+
+    console.log("formData", formData);
+
 
     const handlePopoverOpen = (event, rowData) => {
         console.log("rowData", rowData);
@@ -99,7 +117,10 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                 });
             }
             setOpen(true);
+            setEditMode(false); // Sandes message me edit mode off
+            setDeleteMode(false)
         }
+
         if (action === 'Edit') {
             if (rowId) {
                 setSelectedRowData(rowId);
@@ -121,8 +142,11 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                     Website: rowId.website || '',
                 });
             }
+            setEditMode(true); // ✅ Edit mode on
             setOpenEdit(true);
+            setDeleteMode(false)
         }
+
         if (action === 'Delete') {
             if (rowId) {
                 setSelectedRowData(rowId);
@@ -137,20 +161,76 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                     District: rowId.district_id || '',
                     OU_Address: rowId.ou_address || '',
                     OU_Code: rowId.ou_code || '',
+                    Pin_Code: rowId.pin_code || '',
+                    Landline: rowId.landline || '',
+                    Website: rowId.website || '',
                 });
             }
+            setEditMode(false); // Delete me edit mode off
             setOpenDel(true);
+            setDeleteMode(true)
         }
+
         handlePopoverClose();
     };
+
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Submitting Form Data", formData);
 
-        // 👇 Example: API call or dispatch to update
-        // dispatch(updateOrganizationUnit(formData));
-        // Or make a POST/PUT request using axios
+        let finalData = { ...formData };
+
+        // Root OU banate time parent_ou null
+        if (!finalData.Parent_OU || finalData.Parent_OU === "") {
+            finalData.Parent_OU = null;
+        }
+
+        console.log("Submitting Form Data", finalData);
+
+        if (editMode) {
+            // Update Mode
+            dispatch(updateOrganizationUnit({ formData: finalData, rowId: selectedRowData }))
+                .unwrap()
+                .then((res) => {
+                    toast.success("Update Success", res);
+                    dispatch(fetchOrganizationUnit());
+                    setOpenEdit(false);
+                })
+                .catch((err) => {
+                    toast.error("Update Failed", err);
+                });
+        } else if (deleteMode) {
+            // Delete Mode
+            if (!finalData.gu_id) {
+                toast.error("Delete Failed: gu_id not found");
+                return;
+            }
+
+            dispatch(deleteOrganizationUnit(finalData.gu_id))
+                .unwrap()
+                .then((res) => {
+                    toast.success(res?.message || "Delete Success");
+                    dispatch(fetchOrganizationUnit());
+                    setOpenDel(false);
+                })
+                .catch((err) => {
+                    toast.error(err?.message || "Delete Failed");
+                });
+        } else {
+            // Create Mode
+            dispatch(createOrganizationUnit(finalData))
+                .unwrap()
+                .then((res) => {
+                    toast.success("Create Success", res);
+                    dispatch(fetchOrganizationUnit());
+                    setOpenNew(false);
+                })
+                .catch((err) => {
+                    toast.error("Create Failed", err);
+                });
+        }
     };
+
 
 
     const handleChange = (e) => {
@@ -159,10 +239,17 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
         setFormData((prev) => ({
             ...prev,
             [name]: value,
-            ...(name === "State" && { District: "" })  // State change pe District reset
+            ...(name === "State" && { District: "" }) // state change pe district reset
         }));
-    };
 
+        if (name === "State") {
+            if (value) {
+                dispatch(fetchMastersDistricts(value)); // API call with new state
+            } else {
+                dispatch({ type: "mastersDistricts/clear" }); // optional: agar koi state select na ho
+            }
+        }
+    };
 
     const toggleDrawerNew = (open) => () => {
         setOpenNew(open);
@@ -206,7 +293,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                     return {
                         ...col,
                         valueGetter: (params) => {
-                            const match = MastersStates.find(item => item.id === params.data.state_id);
+                            const match = MastersStates.find(item => parseInt(item.state_code) === params.data.state_id);
                             return match ? match.state : '';
                         }
                     };
@@ -215,7 +302,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                     return {
                         ...col,
                         valueGetter: (params) => {
-                            const match = MastersDistricts.find(item => item.id === params.data.district_id);
+                            const match = MastersDistricts.find(item => parseInt(item.district_code) === params.data.district_id);
                             return match ? match.district : '';
                         }
                     };
@@ -267,8 +354,6 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
         (district) => district.state_code === formData.State
     );
 
-
-
     return (
         <Box
             component="main"
@@ -292,30 +377,12 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                         Organization Unit
                     </Typography>
                     <div className="button">
-                        <button
-                            type="button"
-                            className="btn btn-primary mr-3 btn-bg-1"
-                            onClick={() => setShowSelect((prev) => !prev)} // Toggle filter dropdown
-                        >
-                            Filter
-                        </button>
                         <button type="button" className="btn btn-success" onClick={toggleDrawerNew(true)}>
                             + New
                         </button>
 
-
-
                     </div>
                 </div>
-
-                {showSelect && (
-                    <select className="form-select mt-2 mb-3" style={{ width: '300px' }}>
-                        <option value="">Select an option</option>
-                        <option value="1">Option 1</option>
-                        <option value="2">Option 2</option>
-                    </select>
-                )}
-
 
 
                 <div className="ag-theme-alpine" style={{ height: 539, width: '100%', padding: '10px', borderRadius: '10px' }}>
@@ -328,9 +395,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                         paginationPageSize={10}
                         animateRows={true}
                     />
-
                 </div>
-
 
                 <Popover
                     open={Boolean(anchorEl)}
@@ -397,71 +462,99 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                     <div class="modal-header">
                         {/* <h5 class="modal-title" id="exampleModalLabel">New Organization Unit [Ministry for POC]</h5> */}
                         <Typography variant="h5" mb={2} color='#003566' fontWeight="700">New Organization Unit [Ministry for POC]</Typography>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" onClick={() => setOpenNew(false)} data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form>
-
-                        <Typography variant="h6" mb={2} mt={2} textAlign="center" color='#003566'>Organization for POC</Typography>
-
+                    <form onSubmit={handleSubmit}>
                         <div className="row">
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>Parent organization unit</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>Organization unit type</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>State</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>District</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
-                            </div>
-                            <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="O u code" aria-label="default input example" />
-                            </div>
 
-                            <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="O u name" aria-label="default input example" />
+                            {/* Parent OU */}
+                            <div className="col-md-6 mt-3">
+                                <select
+                                    className="form-select"
+                                    name="Parent_OU"
+                                    value={formData.Parent_OU}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">Select Parent Organization Unit</option>
+                                    <option value="1844">OU for POC</option>
+                                    <option value="2024">POC-Government of Karnataka</option>
+                                </select>
                             </div>
 
                             <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="Address" aria-label="default input example" />
+                                <select
+                                    className="form-select"
+                                    name="OU_Type"
+                                    value={formData.OU_Type}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">Organization unit type</option>
+                                    {OrganizationType.map((item) => (
+                                        <option key={item.code} value={item.code}>{item.description}</option>
+                                    ))}
+                                </select>
                             </div>
 
-                            <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="Pin code" aria-label="default input example" />
+                            <div className="col-md-6 mt-3">
+                                <select
+                                    className="form-select"
+                                    name="State"
+                                    value={formData.State}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">Select State</option>
+                                    {MastersStates.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.state}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="col-md-6 mt-3">
+                                
+                                <select
+                                    className="form-select"
+                                    name="District"
+                                    value={formData.District}
+                                    onChange={handleChange}
+                                    disabled={!formData.State || mastersDistrictsState.loading}
+                                >
+                                    <option value="">
+                                        {mastersDistrictsState.loading ? "Loading..." : "Select District"}
+                                    </option>
+                                    {MastersDistricts.map((item) => (
+                                        <option key={item.id} value={item.district_code}>
+                                            {item.district}
+                                        </option>
+                                    ))}
+                                </select>
+
+                            </div>
+
+                            <div className="col-md-6 mt-3">
+                                <input className="form-control" type="text" placeholder="OU Code" name="OU_Code" value={formData.OU_Code} onChange={handleChange} />
                             </div>
                             <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="Landline" aria-label="default input example" />
+                                <input className="form-control" type="text" placeholder="OU Name" name="OU_Name" value={formData.OU_Name} onChange={handleChange} />
                             </div>
-
-                            <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="Website" aria-label="default input example" />
+                            <div className="col-md-6 mt-3">
+                                <input className="form-control" type="text" placeholder="Address" name="OU_Address" value={formData.OU_Address} onChange={handleChange} />
+                            </div>
+                            <div className="col-md-6 mt-3">
+                                <input className="form-control" type="text" placeholder="Pin Code" name="Pin_Code" value={formData.Pin_Code} onChange={handleChange} />
+                            </div>
+                            <div className="col-md-6 mt-3">
+                                <input className="form-control" type="text" placeholder="Landline" name="Landline" value={formData.Landline} onChange={handleChange} />
+                            </div>
+                            <div className="col-md-6 mt-3">
+                                <input className="form-control" type="text" placeholder="Website" name="Website" value={formData.Website} onChange={handleChange} />
                             </div>
 
                         </div>
-                        <button type="submit" class="btn btn-success m-3">Save</button>
-                        <button type="submit" class="btn btn-danger">Close</button>
+
+                        <button type="submit" className="btn btn-success m-3">Submit</button>
+                        <button type="button" onClick={() => setOpenNew(false)} className="btn btn-danger">Close</button>
                     </form>
                 </div>
 
@@ -485,7 +578,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                                 <Select
                                     labelId="demo-simple-select-label"
                                     id="demo-simple-select"
-                                    value={age}
+                                    // value={age}
                                     label="Sender ID/App"
                                     onChange={handleChange}
                                 >
@@ -581,83 +674,6 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                         <Typography variant="h5" mb={2} color='#003566' fontWeight="700">Update Organization Unit [Ministry for POC]</Typography>
                         <button type="button" class="btn-close" onClick={() => setOpenEdit(false)} data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    {/* <form onSubmit={handleSubmit}>
-                        <Typography variant="h6" mb={2} mt={2} textAlign="center" color='#003566'>Update Organization for POC</Typography>
-                        <div className="row">
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example" value={formData.Parent_OU} onChange={handleChange}>
-                                    <option value="">Select Parent Organization Unit</option>
-                                    <option value="1844">OU for POC</option>
-                                    <option value="2024">POC-Government of Karnataka</option>
-
-                                </select>
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <select class="form-select" aria-label="Default select example" value={formData.OU_Type} onChange={handleChange}>
-                                    <option selected>Organization unit type</option>
-                                    {OrganizationType.map((item) => (
-                                        <option value={item.code}>{item.description}</option>
-                                    ))}
-
-                                </select>
-                            </div>
-                            <div className="col-md-6 mt-3">
-                                <select
-                                    className="form-select"
-                                    aria-label="Default select example"
-                                    value={formData.State}
-                                    onChange={handleChange}
-                                    name="State" // Make sure this matches your formData key
-                                >
-                                    <option value="">Select State</option>
-                                    {MastersStates.map((item) => (
-                                        <option key={item.state_code} value={item.state_code}>
-                                            {item.state}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="col-md-6  mt-3">
-                               
-                                <select
-                                    className="form-select"
-                                    aria-label="Default select example"
-                                    value={formData.District}
-                                    onChange={handleChange}
-                                    name="District"
-                                >
-                                    <option value="">District</option>
-                                    {filteredDistricts.map((item) => (
-                                        <option key={item.district_code} value={item.district_code}>
-                                            {item.district}
-                                        </option>
-                                    ))}
-                                </select>
-
-                            </div>
-                            <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="O u code" value={formData.OU_Code} onChange={handleChange} aria-label="default input example" />
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="O u name" value={formData.OU_Name} onChange={handleChange} aria-label="default input example" />
-                            </div>
-                            <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="Address" value={formData.OU_Address} onChange={handleChange} aria-label="default input example" />
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="Pin code" value={formData.Pin_Code} onChange={handleChange} aria-label="default input example" />
-                            </div>
-                            <div className="col-md-6 mt-3">
-                                <input class="form-control" type="text" placeholder="Landline" value={formData.Landline} onChange={handleChange} aria-label="default input example" />
-                            </div>
-                            <div className="col-md-6  mt-3">
-                                <input class="form-control" type="text" placeholder="Website" value={formData.Website} onChange={handleChange} aria-label="default input example" />
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-success m-3">Update</button>
-                        <button type="button" onClick={() => setOpenEdit(false)} class="btn btn-danger">Close</button>
-                    </form> */}
-
                     <form onSubmit={handleSubmit}>
                         <div className="row">
 
@@ -670,12 +686,11 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                                     onChange={handleChange}
                                 >
                                     <option value="">Select Parent Organization Unit</option>
-                                    <option value="1844">OU for POC</option>
-                                    <option value="2024">POC-Government of Karnataka</option>
+                                    <option value="1">OU for POC</option>
+                                    <option value="2">POC-Government of Karnataka</option>
                                 </select>
                             </div>
 
-                            {/* OU Type */}
                             <div className="col-md-6 mt-3">
                                 <select
                                     className="form-select"
@@ -690,7 +705,6 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                                 </select>
                             </div>
 
-                            {/* State Dropdown */}
                             <div className="col-md-6 mt-3">
                                 <select
                                     className="form-select"
@@ -700,33 +714,34 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                                 >
                                     <option value="">Select State</option>
                                     {MastersStates.map((item) => (
-                                        <option key={item.id} value={item.state_code}>
+                                        <option key={item.id} value={item.id}>
                                             {item.state}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
-                            {/* District Dropdown (filtered based on selected state) */}
                             <div className="col-md-6 mt-3">
+
                                 <select
                                     className="form-select"
                                     name="District"
                                     value={formData.District}
                                     onChange={handleChange}
-                                    disabled={!formData.State} // Disable if state not selected
+                                    disabled={!formData.State || mastersDistrictsState.loading}
                                 >
-                                    <option value="">Select District</option>
-                                    {filteredDistricts.map((item) => (
+                                    <option value="">
+                                        {mastersDistrictsState.loading ? "Loading..." : "Select District"}
+                                    </option>
+                                    {MastersDistricts.map((item) => (
                                         <option key={item.id} value={item.district_code}>
                                             {item.district}
                                         </option>
                                     ))}
                                 </select>
+
                             </div>
 
-
-                            {/* Other Inputs */}
                             <div className="col-md-6 mt-3">
                                 <input className="form-control" type="text" placeholder="OU Code" name="OU_Code" value={formData.OU_Code} onChange={handleChange} />
                             </div>
@@ -759,58 +774,52 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
             < Drawer anchor="top" open={openDel} onClose={toggleDrawerDel(false)} >
                 <div class="modal-content mt-14" style={{ padding: "2%" }}>
                     <div class="modal-header">
-                        {/* <h5 class="modal-title" id="exampleModalLabel">New Organization Unit [Ministry for POC]</h5> */}
                         <Typography variant="h5" mb={2} color='#003566' fontWeight="700">Delete Organization Unit</Typography>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" onClick={() => setOpenDel(false)} data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form>
-
-                        {/* <Typography variant="h6" mb={2} mt={2} textAlign="center">Delete Organization Unit</Typography> */}
+                    <form onSubmit={handleSubmit}>
 
                         <div className="row">
                             <div className="col-md-6  mt-3">
                                 <lavel>Organization Unit Code	</lavel>
-                                <input class="form-control" type="text" placeholder="OU_POC" aria-label="default input example" value="OU_POC" readOnly />
+                                <input class="form-control" type="text" aria-label="default input example" value={formData.OU_Code} readOnly />
                             </div>
-                            <div className="col-md-6  mt-3">
-                                <lavel>Organization</lavel>
-                                <input class="form-control" type="text" placeholder="Organization for POC" aria-label="default input example" value="Organization for POC" readOnly />
-                            </div>
+
                             <div className="col-md-6  mt-3">
                                 <lavel>Organization Name</lavel>
-                                <input class="form-control" type="text" placeholder="OU for POC	" aria-label="default input example" value="OU for POC" readOnly />
+                                <input class="form-control" type="text" aria-label="default input example" value={formData.OU_Name} readOnly />
                             </div>
                             <div className="col-md-6  mt-3">
                                 <lavel>Parent Organization Unit	</lavel>
-                                <input class="form-control" type="text" placeholder="Parent Organization Unit" aria-label="default input example" value="" readOnly />
+                                <input class="form-control" type="text" aria-label="default input example" value={formData.Parent_OU} readOnly />
                             </div>
                             <div className="col-md-6 mt-3">
                                 <lavel>Organization Unit Type	</lavel>
-                                <input class="form-control" type="text" placeholder="Department under Ministry" aria-label="default input example" value="Department under Ministry" readOnly />
+                                <input class="form-control" type="text" aria-label="default input example" value={formData.OU_Type} readOnly />
                             </div>
 
                             <div className="col-md-6  mt-3">
                                 <lavel>Address</lavel>
-                                <input class="form-control" type="text" placeholder="New Delhi" aria-label="default input example" value="New Delhi" readOnly />
+                                <input class="form-control" type="text" aria-label="default input example" value={formData.OU_Address} readOnly />
                             </div>
 
                             <div className="col-md-6 mt-3">
                                 <lavel>Pin Code	</lavel>
-                                <input class="form-control" type="text" placeholder="Pin Code	" aria-label="default input example" value="" readOnly />
+                                <input class="form-control" type="text" aria-label="default input example" value={formData.Pin_Code} readOnly />
                             </div>
 
                             <div className="col-md-6  mt-3">
                                 <lavel>Land Line Number	</lavel>
-                                <input class="form-control" type="text" placeholder="Land Line Number" aria-label="default input example" value="" readOnly />
+                                <input class="form-control" type="text" aria-label="default input example" value={formData.Landline} readOnly />
                             </div>
                             <div className="col-md-6 mt-3">
                                 <lavel>Website</lavel>
-                                <input class="form-control" type="text" placeholder="Website" aria-label="default input example" value="" readOnly />
+                                <input class="form-control" type="text" value={formData.Website} aria-label="default input example" readOnly />
                             </div>
 
                         </div>
                         <button type="submit" class="btn btn-primary m-3">Delete</button>
-                        <button type="submit" class="btn btn-danger">Close</button>
+                        <button type='button' onClick={() => setOpenDel(false)} class="btn btn-danger">Close</button>
                     </form>
                 </div>
             </Drawer >

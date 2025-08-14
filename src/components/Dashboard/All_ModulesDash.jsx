@@ -40,10 +40,6 @@ function All_ModulesDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
         publicVisibility: ''
     });
 
-    // console.log("formData", formData);
-    
-
-
     useEffect(() => {
         dispatch(fetchEmployees());
     }, [dispatch]);
@@ -164,7 +160,7 @@ function All_ModulesDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                             <button
                                 type="button"
                                 className="btn btn-primary mr-3 btn-bg-1"
-                                onClick={() => setShowSelect((prev) => !prev)} // Toggle filter dropdown
+                                onClick={() => setShowSelect((prev) => !prev)}
                             >
                                 Filter
                             </button> :
@@ -529,13 +525,10 @@ function All_ModulesDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
             <Drawer anchor="top" open={openDel} onClose={toggleDrawerDel(false)}>
                 <div className="modal-content mt-14" style={{ padding: "2%" }}>
                     <div class="modal-header">
-                        {/* <h5 class="modal-title" id="exampleModalLabel">New Organization Unit [Ministry for POC]</h5> */}
                         <Typography variant="h5" color='#003566' fontWeight="700" mb={2}>Delete Organization</Typography>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form>
-
-                        {/* <Typography variant="h6" mb={2} mt={2} textAlign="center">Delete Organization Unit</Typography> */}
 
                         <div className="row">
                             <div className="col-md-6  mt-3">
