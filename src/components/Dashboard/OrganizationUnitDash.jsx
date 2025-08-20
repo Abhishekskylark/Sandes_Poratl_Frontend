@@ -175,6 +175,63 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
     };
 
 
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+
+    //     let finalData = { ...formData };
+
+    //     // Root OU banate time parent_ou null
+    //     if (!finalData.Parent_OU || finalData.Parent_OU === "") {
+    //         finalData.Parent_OU = null;
+    //     }
+
+    //     console.log("Submitting Form Data", finalData);
+
+    //     if (editMode) {
+    //         // Update Mode
+    //         dispatch(updateOrganizationUnit({ formData: finalData, rowId: selectedRowData }))
+    //             .unwrap()
+    //             .then((res) => {
+    //                 toast.success("Update Success", res);
+    //                 dispatch(fetchOrganizationUnit());
+    //                 setOpenEdit(false);
+    //             })
+    //             .catch((err) => {
+    //                 toast.error("Update Failed", err);
+    //             });
+    //     } else if (deleteMode) {
+    //         // Delete Mode
+    //         if (!finalData.gu_id) {
+    //             toast.error("Delete Failed: gu_id not found");
+    //             return;
+    //         }
+
+    //         dispatch(deleteOrganizationUnit(finalData.gu_id))
+    //             .unwrap()
+    //             .then((res) => {
+    //                 toast.success(res?.message || "Delete Success");
+    //                 dispatch(fetchOrganizationUnit());
+    //                 setOpenDel(false);
+    //             })
+    //             .catch((err) => {
+    //                 toast.error(err?.message || "Delete Failed");
+    //             });
+    //     } else {
+    //         // Create Mode
+    //         dispatch(createOrganizationUnit(finalData))
+    //             .unwrap()
+    //             .then((res) => {
+    //                 toast.success("Create Success", res);
+    //                 dispatch(fetchOrganizationUnit());
+    //                 setOpenNew(false);
+    //             })
+    //             .catch((err) => {
+    //                 toast.error("Create Failed", err);
+    //             });
+    //     }
+    // };
+
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -188,45 +245,51 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
         console.log("Submitting Form Data", finalData);
 
         if (editMode) {
-            // Update Mode
-            dispatch(updateOrganizationUnit({ formData: finalData, rowId: selectedRowData }))
+            // 🔹 Update Mode
+            dispatch(updateOrganization({ formData: finalData, rowId: selectedRowData }))
                 .unwrap()
                 .then((res) => {
-                    toast.success("Update Success", res);
+                    toast.success(res?.message || "Update Success");
                     dispatch(fetchOrganizationUnit());
                     setOpenEdit(false);
                 })
                 .catch((err) => {
-                    toast.error("Update Failed", err);
+                    toast.error(err?.message || "Update Failed");
                 });
+
         } else if (deleteMode) {
-            // Delete Mode
+            // 🔹 Delete Mode
             if (!finalData.gu_id) {
                 toast.error("Delete Failed: gu_id not found");
                 return;
             }
 
-            dispatch(deleteOrganizationUnit(finalData.gu_id))
+            dispatch(deleteOrganization(finalData.gu_id))
                 .unwrap()
                 .then((res) => {
-                    toast.success(res?.message || "Delete Success");
-                    dispatch(fetchOrganizationUnit());
-                    setOpenDel(false);
+                    if (res?.status === "success") {
+                        toast.success(res.message || "Delete Success");
+                        dispatch(fetchOrganizationUnit());
+                        setOpenDel(false);
+                    } else {
+                        toast.error(res?.message || "Delete Failed");
+                    }
                 })
                 .catch((err) => {
                     toast.error(err?.message || "Delete Failed");
                 });
+
         } else {
-            // Create Mode
+            // 🔹 Create Mode
             dispatch(createOrganizationUnit(finalData))
                 .unwrap()
                 .then((res) => {
-                    toast.success("Create Success", res);
+                    toast.success(res?.message || "Create Success");
                     dispatch(fetchOrganizationUnit());
                     setOpenNew(false);
                 })
                 .catch((err) => {
-                    toast.error("Create Failed", err);
+                    toast.error(err?.message || "Create Failed");
                 });
         }
     };
@@ -512,7 +575,7 @@ function OrganizationUnitDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }
                             </div>
 
                             <div className="col-md-6 mt-3">
-                                
+
                                 <select
                                     className="form-select"
                                     name="District"

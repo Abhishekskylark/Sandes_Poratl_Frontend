@@ -154,10 +154,12 @@ const Sidebar = ({
     setOrgModalOpen(true);
   };
 
-  const userRole = localStorage.getItem("roleid");
+  const userRole = localStorage.getItem("role");
 
-  const userData = Json.find(item => item.id === Number(userRole))
+  // const userData = Json.find(item => item.role === (userRole))
+  const userData = Json.find(item => userRole.includes(item.role));
 
+console.log("userData",userData);
 
 
 
@@ -250,9 +252,8 @@ const Sidebar = ({
           </List>
         </Collapse>
 
-        {userRole == 1 ?
-          <>
-            {/* <ListItem
+{/* 
+          <ListItem
               button
               component={Link}
               to="/sliderMangement"
@@ -264,8 +265,8 @@ const Sidebar = ({
                 <CollectionsIcon />
               </ListItemIcon>
               {(desktopOpen || isMobile) && <ListItemText sx={{ color: "#fff" }} primary="Slider Management" />}
-            </ListItem> */}
-            {/* <ListItem
+            </ListItem> 
+           <ListItem
               button
               component={Link}
               to="/usermanagement"
@@ -279,6 +280,10 @@ const Sidebar = ({
               {(desktopOpen || isMobile) && <ListItemText sx={{ color: "#fff" }} primary="User Management" />}
             </ListItem> */}
 
+
+        {userData.id == 1 ?
+          <>
+          
             <ListItem
               button
               onClick={handleOrgClickModule}
@@ -367,7 +372,7 @@ const Sidebar = ({
 
                 <form onSubmit={handleSubmit}>
                   <div className="row">
-                    {/* Module Name */}
+                 
                     <div className="col-md-4 mt-3">
                       <FormControl fullWidth>
                         <InputLabel htmlFor="module-name">Module Name</InputLabel>
@@ -381,7 +386,7 @@ const Sidebar = ({
                       </FormControl>
                     </div>
 
-                    {/* Permissions Multi-Select (MUI) */}
+                   
                     <div className="col-md-4 mt-3">
                       <FormControl fullWidth>
                         <InputLabel id="permission-multi-label">Select Permissions</InputLabel>
@@ -407,7 +412,7 @@ const Sidebar = ({
                       </FormControl>
                     </div>
 
-                    {/* Status Select (MUI) */}
+                  
                     <div className="col-md-4 mt-3">
                       <FormControl fullWidth>
                         <InputLabel id="status-label">Status</InputLabel>
@@ -427,7 +432,7 @@ const Sidebar = ({
                     </div>
                   </div>
 
-                  {/* Buttons */}
+              
                   <div className="mt-4">
                     <button type="submit" className="btn btn-success me-2">Add</button>
                     <button type="button" className="btn btn-danger" onClick={() => setDrawerOpen(false)}>Close</button>

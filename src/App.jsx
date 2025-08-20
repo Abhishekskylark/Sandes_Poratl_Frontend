@@ -26,6 +26,7 @@ import OrganizationOverview from "./Pages/OrganizationOverview/OrganizationOverv
 import MemberPage from "./Pages/MemberPage/MemberPage";
 import EmployeHeatMap from "./Pages/EmployeHeatMap/EmployeHeatMap";
 import All_modules from "./Pages/AllModules/All_modules";
+import LoginCheck from "./Pages/LoginCheck";
 
 function App() {
   return (
@@ -55,6 +56,8 @@ function App() {
       <ToastContainer />
 
     </Router>
+
+
   );
 }
 

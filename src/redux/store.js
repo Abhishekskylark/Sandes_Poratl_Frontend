@@ -26,6 +26,8 @@ import {
   memberReducer,
   createorganizationUnitReducer,
   deleteOrganizationUnitReducer,
+  createOrganizationReducer,
+  CUDDesignationReducer,
 } from './authSlice';
 
 const store = configureStore({
@@ -44,6 +46,7 @@ const store = configureStore({
     users: usersReducer,
     statistics:statisticsReducer,
     organization: organizationReducer,
+    createOrganization:createOrganizationReducer,
     organizationUnit: organizationUnitReducer,
     masterDistricts:mastersDistrictsReducer,
     masterStates:mastersStatesReducer,
@@ -55,6 +58,8 @@ const store = configureStore({
     updateOrganization: updateOrganizationReducer,
     deleteOrganization:deleteOrganizationReducer,
     deleteOrganizationUnit: deleteOrganizationUnitReducer,
+    CUDDesignation:CUDDesignationReducer,
+
     auth: authReducer,
   },
 });

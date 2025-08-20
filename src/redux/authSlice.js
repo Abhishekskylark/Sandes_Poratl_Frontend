@@ -17,10 +17,11 @@ const getIP = async () => {
 
 /* ---------------------------- Login Admin ---------------------------- */
 // 🔐 Login Thunk
+
+
 export const loginAdmin = createAsyncThunk(
   "auth/loginAdmin",
-  async ({ mobile, password, roles_id }, { rejectWithValue }) => {
-
+  async ({ username, password }, { rejectWithValue }) => {
     try {
       const parser = new UAParser();
       const uaData = parser.getResult();
@@ -28,25 +29,20 @@ export const loginAdmin = createAsyncThunk(
       const version = uaData.browser.version;
       const ip = await getIP();
 
-      const response = await fetch(
-        "http://localhost:8080/realms/sandes_new/protocol/openid-connect/token",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            grant_type: "password",
-            client_id: "sandes_new",
-            client_secret: "P34vdWuXfQU8xzXTtwThhtRcimXY2n1N",
-            username: mobile,
-            password: password,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
+      // ⚡️ response.json() call karke asli data nikal
       const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.error_description || "Invalid credentials");
+      // console.log("responseLogin DATA >>>", data);
 
-      const accessToken = data.access_token;
+      if (!response.ok)
+        return rejectWithValue(data.message || "Invalid credentials");
+
+      const accessToken = data.token;
       const [part1, part2, part3] = accessToken.split(".");
 
       localStorage.setItem("token1", part1);
@@ -56,31 +52,13 @@ export const loginAdmin = createAsyncThunk(
       localStorage.setItem("browser", browser);
       localStorage.setItem("version", version);
 
-      const profileHeaders = {
-        Authorization: `Bearer ${accessToken}`,
-        "X-Client-IP": ip,
-        "X-Client-Browser": browser,
-        "X-Client-Version": version,
-      };
-
-      // 🔁 Add roles_id only if passed
-      if (roles_id) {
-        profileHeaders["x-roles-id"] = roles_id;
-      }
-
-      const profileRes = await fetch("http://localhost:5000/api/user-profile", {
-        headers: profileHeaders,
-      });
-
-      const profileData = await profileRes.json();
-
-      if (!profileRes.ok) return rejectWithValue(profileData.message || "Failed to fetch profile");
 
       return {
-        user: profileData.user,
+        user: data.user, // 👈 abhi backend se pura user aa raha hai
         token: accessToken,
       };
     } catch (err) {
+      console.error("Login Error", err);
       return rejectWithValue("Login failed");
     }
   }
@@ -132,7 +110,9 @@ export const fetchCaptcha = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/captcha");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch captcha");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch captcha"
+      );
     }
   }
 );
@@ -201,10 +181,15 @@ export const addModule = createAsyncThunk(
   "modules/addModule",
   async (payload, { rejectWithValue }) => {
     try {
-      const res = await axios.post("http://localhost:8080/api/v1/modules", payload);
+      const res = await axios.post(
+        "http://localhost:8080/api/v1/modules",
+        payload
+      );
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to add module");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to add module"
+      );
     }
   }
 );
@@ -277,7 +262,9 @@ export const fetchStatistics = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/stats");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Statistics");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Statistics"
+      );
     }
   }
 );
@@ -306,7 +293,6 @@ const statisticsSlice = createSlice({
   },
 });
 
-
 /* ---------------------------- Fetch Registration Graph  ---------------------------- */
 
 // Async thunk to fetch Registration Graph
@@ -314,10 +300,14 @@ export const fetchRegistrationGraph = createAsyncThunk(
   "registrationGraph/fetchRegistrationGraph",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/registrationgraph");
+      const response = await axios.get(
+        "http://localhost:8000/registrationgraph"
+      );
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Registration Graph");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Registration Graph"
+      );
     }
   }
 );
@@ -346,7 +336,6 @@ const registrationGraphSlice = createSlice({
   },
 });
 
-
 /* ---------------------------- Fetch User Graph  ---------------------------- */
 
 // Async thunk to fetch User Graph
@@ -357,7 +346,9 @@ export const fetchUserGraph = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/userGraph");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch User Graph");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch User Graph"
+      );
     }
   }
 );
@@ -396,7 +387,9 @@ export const fetchMessageGraph = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/messageGraph");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Message Graph");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Message Graph"
+      );
     }
   }
 );
@@ -425,7 +418,6 @@ const messageGraphSlice = createSlice({
   },
 });
 
-
 /* ---------------------------- Fetch Active User Graph  ---------------------------- */
 
 // Async thunk to fetch Active User Graph
@@ -436,7 +428,9 @@ export const fetchActiveUserGraph = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/activeUserGroup");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Active User Graph");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Active User Graph"
+      );
     }
   }
 );
@@ -475,7 +469,9 @@ export const fetchUsers = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/users");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch users");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch users"
+      );
     }
   }
 );
@@ -511,10 +507,14 @@ export const fetchRegistration = createAsyncThunk(
   "registration/fetchRegistration",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/registration_activity");
+      const response = await axios.get(
+        "http://localhost:8000/registration_activity"
+      );
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Registration");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Registration"
+      );
     }
   }
 );
@@ -550,12 +550,15 @@ export const fetchMessageCount = createAsyncThunk(
   "messageCount/fetchMessageCount",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/app_message_activity");
+      const response = await axios.get(
+        "http://localhost:8000/app_message_activity"
+      );
       console.log("response.data", response.data);
       return response.data;
-
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Message Count");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Message Count"
+      );
     }
   }
 );
@@ -594,7 +597,9 @@ export const fetchEmployees = createAsyncThunk(
       const response = await axios.get("http://localhost:5000/api/employee");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch employees");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch employees"
+      );
     }
   }
 );
@@ -631,10 +636,16 @@ export const fetchOrganization = createAsyncThunk(
   "organization/fetchOrganization",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/organization");
-      return response.data;
+      const response = await axios.get(
+        "http://localhost:8000/organization/list"
+      );
+      console.log("response", response.data.pagination.data);
+
+      return response.data.pagination;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch organization");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch organization"
+      );
     }
   }
 );
@@ -663,45 +674,102 @@ const organizationSlice = createSlice({
   },
 });
 
+/* ---------------------------- Create Organization  ---------------------------- */
+
+// Async thunk to Create Organization
+export const createOrganization = createAsyncThunk(
+  "organization/create",
+  async (orgData, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        "http://localhost:8000/organization/insert",
+        orgData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+const CreateOrganizationSlice = createSlice({
+  name: "organization",
+  initialState: {
+    loading: false,
+    error: null,
+    success: null,
+    data: [],
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(createOrganization.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = null;
+      })
+      .addCase(createOrganization.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = action.payload.message;
+        state.data.push(action.payload.data);
+      })
+      .addCase(createOrganization.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.error || "Something went wrong";
+      });
+  },
+});
+
 /* ---------------------------- Update Organization  ---------------------------- */
 
 // Async thunk to Update Organization
 export const updateOrganization = createAsyncThunk(
-  'organization/updateOrganization',
+  "organization/updateOrganization",
   async ({ formData, rowId }, thunkAPI) => {
     try {
       const apiData = {
         ...rowId,
         organization_code: formData.organizationCode || rowId.organization_code,
-        organization_type_id: formData.organizationType || rowId.organization_type_id,
+        organization_type_id:
+          formData.organizationType || rowId.organization_type_id,
         o_name: formData.organizationName || rowId.o_name,
         is_o_visibility: formData.orgVisibility,
         is_public_visibility: formData.publicVisibility,
         vhost_id: formData.vhost_id || rowId.vhost_id,
       };
 
-
       const response = await axios.put(
-        `http://localhost:8000/organization/${formData.gu_id}`,
+        `http://localhost:8000/organization/update/${formData.gu_id || rowId.gu_id}`,
         apiData
       );
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || "An unknown error occurred"
+      );
     }
   }
 );
 
 const UpdateorganizationSlice = createSlice({
-  name: 'organization',
+  name: "organization",
   initialState: {
     formData: {
-      organizationCode: '',
-      organizationType: '',
-      organizationName: '',
-      vhost: '',
-      orgVisibility: '',
-      publicVisibility: '',
+      organizationCode: "",
+      organizationType: "",
+      organizationName: "",
+      vhost: "",
+      orgVisibility: "",
+      publicVisibility: "",
     },
     loading: false,
     error: null,
@@ -712,12 +780,12 @@ const UpdateorganizationSlice = createSlice({
     },
     clearFormData: (state) => {
       state.formData = {
-        organizationCode: '',
-        organizationType: '',
-        organizationName: '',
-        vhost: '',
-        orgVisibility: '',
-        publicVisibility: '',
+        organizationCode: "",
+        organizationType: "",
+        organizationName: "",
+        vhost: "",
+        orgVisibility: "",
+        publicVisibility: "",
       };
     },
   },
@@ -741,21 +809,23 @@ const UpdateorganizationSlice = createSlice({
 
 // Async thunk to Delete Organization
 export const deleteOrganization = createAsyncThunk(
-  'organization/deleteOrganization',
+  "organization/deleteOrganization",
   async (gu_id, thunkAPI) => {
     try {
-      const response = await axios.delete(`http://localhost:8000/organization/${gu_id}`);
-      console.log("response", response.data);
-
+      const response = await axios.delete(
+        `http://localhost:8000/organization/delete/${gu_id}`
+      );
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || "An unknown error occurred"
+      );
     }
   }
 );
 
 const deleteOrganizationSlice = createSlice({
-  name: 'deleteOrganization',
+  name: "deleteOrganization",
   initialState: {
     loading: false,
     error: null,
@@ -777,11 +847,12 @@ const deleteOrganizationSlice = createSlice({
       })
       .addCase(deleteOrganization.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload.message || 'Organization deleted successfully';
+        state.successMessage =
+          action.payload.message || "Organization deleted successfully";
       })
       .addCase(deleteOrganization.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Delete failed';
+        state.error = action.payload?.message || "Delete failed";
       });
   },
 });
@@ -793,10 +864,14 @@ export const fetchOrganizationUnit = createAsyncThunk(
   "organizationUnit/fetchOrganizationUnit",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/Organization_Unit");
+      const response = await axios.get(
+        "http://localhost:8000/Organization_Unit"
+      );
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Organization Unit");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Organization Unit"
+      );
     }
   }
 );
@@ -829,22 +904,22 @@ const organizationUnitSlice = createSlice({
 
 // 🔹 // Async thunk to CREATE Organization Unit
 export const createOrganizationUnit = createAsyncThunk(
-  'organizationUnit/createOrganizationUnit',
+  "organizationUnit/createOrganizationUnit",
   async (formData, thunkAPI) => {
     try {
       const apiData = {
-        parent_ou: formData.Parent_OU || '',
-        ou_id: formData.OU_ID || '',
-        ou_name: formData.OU_Name || '',
-        ou_type: formData.OU_Type || '',
-        organization_id: formData.organization_id || '',
-        state_id: formData.State || '',
-        district_id: formData.District || '',
-        ou_address: formData.OU_Address || '',
-        ou_code: formData.OU_Code || '',
-        pin_code: formData.Pin_Code || '',
-        landline: formData.Landline || '',
-        website: formData.Website || '',
+        parent_ou: formData.Parent_OU || "",
+        ou_id: formData.OU_ID || "",
+        ou_name: formData.OU_Name || "",
+        ou_type: formData.OU_Type || "",
+        organization_id: formData.organization_id || "",
+        state_id: formData.State || "",
+        district_id: formData.District || "",
+        ou_address: formData.OU_Address || "",
+        ou_code: formData.OU_Code || "",
+        pin_code: formData.Pin_Code || "",
+        landline: formData.Landline || "",
+        website: formData.Website || "",
         // gu_id optional: backend khud generate karega
       };
 
@@ -855,21 +930,23 @@ export const createOrganizationUnit = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error("Create API error:", error?.response || error);
-      return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || "An unknown error occurred"
+      );
     }
   }
 );
 
 const createorganizationUnitSlice = createSlice({
-  name: 'organizationUnit',
+  name: "organizationUnit",
   initialState: {
     formData: {
-      organizationCode: '',
-      organizationType: '',
-      organizationName: '',
-      vhost: '',
-      orgVisibility: '',
-      publicVisibility: '',
+      organizationCode: "",
+      organizationType: "",
+      organizationName: "",
+      vhost: "",
+      orgVisibility: "",
+      publicVisibility: "",
     },
     loading: false,
     error: null,
@@ -880,12 +957,12 @@ const createorganizationUnitSlice = createSlice({
     },
     clearFormData: (state) => {
       state.formData = {
-        organizationCode: '',
-        organizationType: '',
-        organizationName: '',
-        vhost: '',
-        orgVisibility: '',
-        publicVisibility: '',
+        organizationCode: "",
+        organizationType: "",
+        organizationName: "",
+        vhost: "",
+        orgVisibility: "",
+        publicVisibility: "",
       };
     },
   },
@@ -918,11 +995,10 @@ const createorganizationUnitSlice = createSlice({
   },
 });
 
-
 /* ---------------------------- Update Organization Unit  ---------------------------- */
 
 export const updateOrganizationUnit = createAsyncThunk(
-  'organizationUnit/updateOrganizationUnit',
+  "organizationUnit/updateOrganizationUnit",
   async ({ formData, rowId }, thunkAPI) => {
     try {
       const apiData = {
@@ -948,22 +1024,23 @@ export const updateOrganizationUnit = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error("Update API error:", error?.response || error); // 🔹 real error
-      return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || "An unknown error occurred"
+      );
     }
   }
 );
 
-
 const UpdateorganizationUnitSlice = createSlice({
-  name: 'organizationUnit',
+  name: "organizationUnit",
   initialState: {
     formData: {
-      organizationCode: '',
-      organizationType: '',
-      organizationName: '',
-      vhost: '',
-      orgVisibility: '',
-      publicVisibility: '',
+      organizationCode: "",
+      organizationType: "",
+      organizationName: "",
+      vhost: "",
+      orgVisibility: "",
+      publicVisibility: "",
     },
     loading: false,
     error: null,
@@ -974,12 +1051,12 @@ const UpdateorganizationUnitSlice = createSlice({
     },
     clearFormData: (state) => {
       state.formData = {
-        organizationCode: '',
-        organizationType: '',
-        organizationName: '',
-        vhost: '',
-        orgVisibility: '',
-        publicVisibility: '',
+        organizationCode: "",
+        organizationType: "",
+        organizationName: "",
+        vhost: "",
+        orgVisibility: "",
+        publicVisibility: "",
       };
     },
   },
@@ -1003,19 +1080,23 @@ const UpdateorganizationUnitSlice = createSlice({
 
 // Async thunk to Delete Organization Unit
 export const deleteOrganizationUnit = createAsyncThunk(
-  'organizationUnit/deleteOrganizationUnit',
+  "organizationUnit/deleteOrganizationUnit",
   async (gu_id, thunkAPI) => {
     try {
-      const response = await axios.delete(`http://localhost:8000/organization_unit/${gu_id}`);
+      const response = await axios.delete(
+        `http://localhost:8000/organization_unit/${gu_id}`
+      );
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error?.response?.data || "An unknown error occurred");
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || "An unknown error occurred"
+      );
     }
   }
 );
 
 const deleteOrganizationUnitSlice = createSlice({
-  name: 'deleteOrganizationUnit',
+  name: "deleteOrganizationUnit",
   initialState: {
     loading: false,
     error: null,
@@ -1037,15 +1118,15 @@ const deleteOrganizationUnitSlice = createSlice({
       })
       .addCase(deleteOrganizationUnit.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload.message || 'Organization deleted successfully';
+        state.successMessage =
+          action.payload.message || "Organization deleted successfully";
       })
       .addCase(deleteOrganizationUnit.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Delete failed';
+        state.error = action.payload || "Delete failed";
       });
   },
 });
-
 
 /* ---------------------------- Fetch Masters States  ---------------------------- */
 
@@ -1057,7 +1138,9 @@ export const fetchMastersStates = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/masters_states");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Masters States");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Masters States"
+      );
     }
   }
 );
@@ -1101,36 +1184,12 @@ export const fetchMastersDistricts = createAsyncThunk(
       const response = await axios.get(url);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Masters Districts");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Masters Districts"
+      );
     }
   }
 );
-
-
-
-// const mastersDistrictsSlice = createSlice({
-//   name: "mastersDistricts",
-//   initialState: {
-//     mastersDistricts: [],
-//     loading: false,
-//     error: null,
-//   },
-//   reducers: {},
-//   extraReducers: (builder) => {
-//     builder
-//       .addCase(fetchMastersDistricts.pending, (state) => {
-//         state.loading = true;
-//       })
-//       .addCase(fetchMastersDistricts.fulfilled, (state, action) => {
-//         state.loading = false;
-//         state.mastersDistricts = action.payload;
-//       })
-//       .addCase(fetchMastersDistricts.rejected, (state, action) => {
-//         state.loading = false;
-//         state.error = action.payload;
-//       });
-//   },
-// });
 
 const mastersDistrictsSlice = createSlice({
   name: "mastersDistricts",
@@ -1164,10 +1223,14 @@ export const fetchOrganizationType = createAsyncThunk(
   "organizationType/fetchOrganizationType",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/organization_type");
+      const response = await axios.get(
+        "http://localhost:8000/organization_type"
+      );
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch OrganizationType");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch OrganizationType"
+      );
     }
   }
 );
@@ -1203,10 +1266,16 @@ export const fetchDesignation = createAsyncThunk(
   "designation/fetchDesignation",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/designation");
+      const response = await axios.get(
+        "http://localhost:8000/designation/list"
+      );
+      console.log("response", response);
+
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch designation");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch designation"
+      );
     }
   }
 );
@@ -1235,6 +1304,140 @@ const designationSlice = createSlice({
   },
 });
 
+/* ---------------------------- CREATE Designation ---------------------------- */
+export const createDesignation = createAsyncThunk(
+  "designation/createDesignation",
+  async (formData, thunkAPI) => {
+    try {
+      const apiData = {
+        designation_name: formData.designation_name || "",
+        organization_id: formData.organization_id || "",
+        // gu_id backend generate karega
+      };
+      const response = await axios.post(
+        "http://localhost:8000/designation",
+        apiData
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || "An unknown error occurred"
+      );
+    }
+  }
+);
+
+/* ---------------------------- UPDATE Designation ---------------------------- */
+export const updateDesignation = createAsyncThunk(
+  "designation/updateDesignation",
+  async ({ formData, designation_gu_id }, thunkAPI) => {
+    try {
+      const apiData = {
+        designation_name: formData.designation_name,
+        organization_id: formData.organization_id,
+      };
+      const response = await axios.put(
+        `http://localhost:8000/designation/${designation_gu_id}`,
+        apiData
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || "An unknown error occurred"
+      );
+    }
+  }
+);
+
+/* ---------------------------- DELETE Designation ---------------------------- */
+export const deleteDesignation = createAsyncThunk(
+  "designation/deleteDesignation",
+  async (gu_id, thunkAPI) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8000/designation/${gu_id}`
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || "An unknown error occurred"
+      );
+    }
+  }
+);
+
+/* ---------------------------- Slice ---------------------------- */
+const CUDDesignationSlice = createSlice({
+  name: "designation",
+  initialState: {
+    data: [],
+    loading: false,
+    error: null,
+    successMessage: null,
+  },
+  reducers: {
+    clearDesignationStatus: (state) => {
+      state.loading = false;
+      state.error = null;
+      state.successMessage = null;
+    },
+  },
+  extraReducers: (builder) => {
+    // CREATE
+    builder.addCase(createDesignation.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(createDesignation.fulfilled, (state, action) => {
+      state.loading = false;
+      state.data.push(action.payload.data);
+      state.successMessage =
+        action.payload.message || "Designation created successfully";
+    });
+    builder.addCase(createDesignation.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Create failed";
+    });
+
+    // UPDATE
+    builder.addCase(updateDesignation.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(updateDesignation.fulfilled, (state, action) => {
+      state.loading = false;
+      const updated = action.payload.data;
+      const index = state.data.findIndex((d) => d.gu_id === updated.gu_id);
+      if (index !== -1) state.data[index] = updated;
+      state.successMessage =
+        action.payload.message || "Designation updated successfully";
+    });
+    builder.addCase(updateDesignation.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Update failed";
+    });
+
+    // DELETE
+    builder.addCase(deleteDesignation.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+      state.successMessage = null;
+    });
+    builder.addCase(deleteDesignation.fulfilled, (state, action) => {
+      state.loading = false;
+      state.successMessage =
+        action.payload.message || "Designation deleted successfully";
+      // remove deleted designation from data
+      if (action.meta.arg) {
+        state.data = state.data.filter((d) => d.gu_id !== action.meta.arg);
+      }
+    });
+    builder.addCase(deleteDesignation.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Delete failed";
+    });
+  },
+});
 
 /* ---------------------------- Fetch Group  ---------------------------- */
 
@@ -1246,7 +1449,9 @@ export const fetchGroup = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/group");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch group");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch group"
+      );
     }
   }
 );
@@ -1282,10 +1487,14 @@ export const fetchMinistry = createAsyncThunk(
   "ministry/fetchMinistry",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/masters_ministries");
+      const response = await axios.get(
+        "http://localhost:8000/masters_ministries"
+      );
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch ministry");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch ministry"
+      );
     }
   }
 );
@@ -1314,7 +1523,6 @@ const ministrySlice = createSlice({
   },
 });
 
-
 /* ---------------------------- Fetch Import Employee  ---------------------------- */
 
 // Async thunk to fetch Import Employee
@@ -1322,10 +1530,14 @@ export const fetchImportEmployee = createAsyncThunk(
   "importEmployee/fetchImportEmployee",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:8000/portal_import_employees_details");
+      const response = await axios.get(
+        "http://localhost:8000/portal_import_employees_details"
+      );
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Import Employee");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Import Employee"
+      );
     }
   }
 );
@@ -1354,7 +1566,6 @@ const importEmployeeSlice = createSlice({
   },
 });
 
-
 /* ---------------------------- Fetch Member  ---------------------------- */
 
 // Async thunk to fetch Member
@@ -1365,7 +1576,9 @@ export const fetchMember = createAsyncThunk(
       const response = await axios.get("http://localhost:8000/audit_employee");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch Import Employee");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch Import Employee"
+      );
     }
   }
 );
@@ -1394,7 +1607,6 @@ const memberSlice = createSlice({
   },
 });
 
-
 /* ---------------------------- EXPORT REDUCERS ---------------------------- */
 
 export const { logout } = authSlice.actions;
@@ -1407,6 +1619,7 @@ export const registrationReducer = registrationSlice.reducer;
 export const messageCountReducer = messageCountSlice.reducer;
 export const employeeReducer = employeeSlice.reducer;
 export const memberReducer = memberSlice.reducer;
+export const createOrganizationReducer = CreateOrganizationSlice.reducer;
 export const organizationReducer = organizationSlice.reducer;
 export const organizationUnitReducer = organizationUnitSlice.reducer;
 export const mastersDistrictsReducer = mastersDistrictsSlice.reducer;
@@ -1420,14 +1633,18 @@ export const importEmployeeReducer = importEmployeeSlice.reducer;
 export const groupReducer = groupSlice.reducer;
 export const ministryReducer = ministrySlice.reducer;
 export const organizationTypeReducer = organizationTypeSlice.reducer;
-export const createorganizationUnitReducer = createorganizationUnitSlice.reducer;
+export const createorganizationUnitReducer =
+  createorganizationUnitSlice.reducer;
 export const updateOrganizationReducer = UpdateorganizationSlice.reducer; // camelCase preferred
-export const updateOrganizationUnitReducer = UpdateorganizationUnitSlice.reducer;
+export const updateOrganizationUnitReducer =
+  UpdateorganizationUnitSlice.reducer;
 export const { setVerifiedFalse, setVerifiedTrue } = verifyCaptchaSlice.actions;
 export default verifyCaptchaSlice.reducer;
 export const authReducer = authSlice.reducer;
 export const { setFormData, clearFormData } = UpdateorganizationSlice.actions;
 export const { clearDeleteStatus } = deleteOrganizationSlice.actions;
 export const deleteOrganizationReducer = deleteOrganizationSlice.reducer;
-export const deleteOrganizationUnitReducer = deleteOrganizationUnitSlice.reducer;
-
+export const deleteOrganizationUnitReducer =
+  deleteOrganizationUnitSlice.reducer;
+export const CUDDesignationReducer = CUDDesignationSlice.reducer;
+export const { clearDesignationStatus } = designationSlice.actions;

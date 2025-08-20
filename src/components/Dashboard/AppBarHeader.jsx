@@ -7,30 +7,48 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import {
-  Menu as MenuIcon,
-  AccountCircle,
-} from "@mui/icons-material";
+import { Menu as MenuIcon, AccountCircle } from "@mui/icons-material";
 import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserTie,
   faBuilding,
   faSitemap,
   faRightToBracket,
   faLock,
-} from '@fortawesome/free-solid-svg-icons';
-import { useKeycloak } from "../../KeycloakProvider";
+} from "@fortawesome/free-solid-svg-icons";
 import { CheckCircle } from "@mui/icons-material";
+
+const ROLE_CONFIG = [
+  { key: "ROLE_SUPER_ADMIN", label: "Sign in as Super Admin", icon: faUserTie },
+  {
+    key: "ROLE_MINISTRY_ADMIN",
+    label: "Sign in as Ministry Admin",
+    icon: faBuilding,
+  },
+  { key: "ROLE_O_ADMIN", label: "Sign in as O-Admin", icon: faSitemap },
+  { key: "ROLE_OU_ADMIN", label: "Sign in as OU-Admin", icon: faSitemap },
+];
 
 const AppBarHeader = ({ handleDrawerToggle }) => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const { userInfo } = useKeycloak();
+  // const { userInfo } = useKeycloak();
 
-  const mobile = localStorage.getItem("mobile");
+  const username = localStorage.getItem("username");
   const loginRole = localStorage.getItem("role");
   const AllRoles = JSON.parse(localStorage.getItem("AllRoles"));
   const isMenuOpen = Boolean(anchorEl);
+
+  // convert array → object with index
+  const rolesObj = AllRoles.reduce((acc, role, index) => {
+    acc[index] = role;
+    return acc;
+  }, {});
+
+  // final JSON
+  const formattedData = { roles: rolesObj };
+
+  console.log("formattedData", formattedData);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -43,6 +61,17 @@ const AppBarHeader = ({ handleDrawerToggle }) => {
     localStorage.setItem("selected_role", selectedRole);
     handleMenuClose();
   };
+
+  const rolesArr = React.useMemo(() => {
+    const r = formattedData?.roles;
+    if (!r) return [];
+    if (Array.isArray(r)) return r; // already array
+    if (typeof r === "object") return Object.values(r); // object -> array
+    if (typeof r === "string") return [r]; // single string
+    return [];
+  }, [formattedData]);
+
+  const hasRole = (role) => rolesArr.includes(role);
 
   return (
     <AppBar
@@ -69,7 +98,12 @@ const AppBarHeader = ({ handleDrawerToggle }) => {
           />
         </div>
 
-        <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} sx={{ ml: 2, mr: 2 }}>
+        <IconButton
+          color="inherit"
+          edge="start"
+          onClick={handleDrawerToggle}
+          sx={{ ml: 2, mr: 2 }}
+        >
           <MenuIcon />
         </IconButton>
 
@@ -79,76 +113,6 @@ const AppBarHeader = ({ handleDrawerToggle }) => {
           <AccountCircle />
         </IconButton>
 
-        {/* <Menu
-          anchorEl={anchorEl}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
-          open={isMenuOpen}
-          onClose={handleMenuClose}
-        >
-          {(AllRoles[0].role === "super-admin") ?
-            <MenuItem
-              component={Link}
-              to="/LoginAdmin"
-              onClick={() => handleRoleClick("super-admin")}
-              sx={loginRole === "super-admin" ? { color: "green", fontWeight: "bold" } : {}}
-            >
-              {loginRole === "super-admin" && (
-                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
-              )}
-              <FontAwesomeIcon icon={faUserTie} className="mr-2" style={{ fontSize: "20px" }} />
-              Sign in as Super Admin
-            </MenuItem> :
-            <></>}
-          {(AllRoles[1].role === "ministry-admin") ?
-            <MenuItem
-              component={Link}
-              to="/LoginAdmin"
-              onClick={() => handleRoleClick("ministry-admin")}
-              sx={loginRole === "ministry-admin" ? { color: "green", fontWeight: "bold" } : {}}
-            >
-              {loginRole === "ministry-admin" && (
-                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
-              )}
-              <FontAwesomeIcon icon={faBuilding} className="mr-2" style={{ fontSize: "20px" }} />
-              Sign in as Ministry Admin
-            </MenuItem> : <></>}
-          {(AllRoles[2].role === "O-Admin") ?
-            <MenuItem
-              component={Link}
-              to="/LoginAdmin"
-              onClick={() => handleRoleClick("O-Admin")}
-              sx={loginRole === "O-Admin" ? { color: "green", fontWeight: "bold" } : {}}
-            >
-              {loginRole === "O-Admin" && (
-                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
-              )}
-              <FontAwesomeIcon icon={faSitemap} className="mr-2" style={{ fontSize: "20px" }} />
-              Sign in as O-Admin
-            </MenuItem> : <></>}
-          {(AllRoles[3].role === "OU-Admin") ?
-            <MenuItem
-              component={Link}
-              to="/LoginAdmin"
-              onClick={() => handleRoleClick("OU-Admin")}
-              sx={loginRole === "OU-Admin" ? { color: "green", fontWeight: "bold" } : {}}
-            >
-              {loginRole === "OU-Admin" && (
-                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
-              )}
-              <FontAwesomeIcon icon={faSitemap} className="mr-2" style={{ fontSize: "20px" }} />
-              Sign in as OU-Admin
-            </MenuItem> : <></>}
-          {mobile && (
-            <MenuItem onClick={handleMenuClose}>
-              <FontAwesomeIcon icon={faLock} className="mr-2" style={{ fontSize: "20px" }} /> Logged in as {mobile}
-            </MenuItem>
-          )}
-          <MenuItem component={Link} to="/" onClick={handleMenuClose}>
-            <FontAwesomeIcon icon={faRightToBracket} className="mr-2" style={{ fontSize: "20px" }} /> Logout
-          </MenuItem>
-        </Menu> */}
-
         <Menu
           anchorEl={anchorEl}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -156,7 +120,247 @@ const AppBarHeader = ({ handleDrawerToggle }) => {
           open={isMenuOpen}
           onClose={handleMenuClose}
         >
-          {AllRoles.map((item) => {
+          {/* {formattedData?.roles[1] === "ROLE_SUPER_ADMIN" ? (
+            <MenuItem
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick("super-admin")}
+              sx={
+                loginRole === "ROLE_SUPER_ADMIN"
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === "ROLE_SUPER_ADMIN" && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={faUserTie}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              Sign in as Super Admin
+            </MenuItem>
+          ) : (
+            <></>
+          )}
+          {formattedData?.roles[1] === "ROLE_MINISTRY_ADMIN" ? (
+            <MenuItem
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick("ROLE_MINISTRY_ADMIN")}
+              sx={
+                loginRole === "ROLE_MINISTRY_ADMIN"
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === "ROLE_MINISTRY_ADMIN" && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={faBuilding}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              Sign in as Ministry Admin
+            </MenuItem>
+          ) : (
+            <></>
+          )}
+          {formattedData?.roles[1] === "ROLE_O_ADMIN" ? (
+            <MenuItem
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick("ROLE_O_ADMIN")}
+              sx={
+                loginRole === "ROLE_O_ADMIN"
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === "ROLE_O_ADMIN" && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={faSitemap}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              Sign in as O-Admin
+            </MenuItem>
+          ) : (
+            <></>
+          )}
+          {formattedData?.roles[1] === "ROLE_OU_ADMIN" ? (
+            <MenuItem
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick("ROLE_OU_ADMIN")}
+              sx={
+                loginRole === "ROLE_OU_ADMIN"
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === "ROLE_OU_ADMIN" && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={faSitemap}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              Sign in as OU-Admin
+            </MenuItem>
+          ) : (
+            <></>
+          )} */}
+
+          {/* {formattedData?.roles?.includes("ROLE_SUPER_ADMIN") && (
+            <MenuItem
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick("ROLE_SUPER_ADMIN")}
+              sx={
+                loginRole === "ROLE_SUPER_ADMIN"
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === "ROLE_SUPER_ADMIN" && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={faUserTie}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              Sign in as Super Admin
+            </MenuItem>
+          )}
+
+          {formattedData?.roles?.includes("ROLE_MINISTRY_ADMIN") && (
+            <MenuItem
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick("ROLE_MINISTRY_ADMIN")}
+              sx={
+                loginRole === "ROLE_MINISTRY_ADMIN"
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === "ROLE_MINISTRY_ADMIN" && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={faBuilding}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              Sign in as Ministry Admin
+            </MenuItem>
+          )}
+
+          {formattedData?.roles?.includes("ROLE_O_ADMIN") && (
+            <MenuItem
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick("ROLE_O_ADMIN")}
+              sx={
+                loginRole === "ROLE_O_ADMIN"
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === "ROLE_O_ADMIN" && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={faSitemap}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              Sign in as O-Admin
+            </MenuItem>
+          )}
+
+          {formattedData?.roles?.includes("ROLE_OU_ADMIN") && (
+            <MenuItem
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick("ROLE_OU_ADMIN")}
+              sx={
+                loginRole === "ROLE_OU_ADMIN"
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === "ROLE_OU_ADMIN" && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={faSitemap}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              Sign in as OU-Admin
+            </MenuItem>
+          )} */}
+
+          {ROLE_CONFIG.filter((r) => hasRole(r.key)).map((r) => (
+            <MenuItem
+              key={r.key}
+              component={Link}
+              to="/LoginAdmin"
+              onClick={() => handleRoleClick(r.key)} // <-- consistent key pass karo
+              sx={
+                loginRole === r.key
+                  ? { color: "green", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {loginRole === r.key && (
+                <CheckCircle sx={{ color: "green", fontSize: 20, mr: 1 }} />
+              )}
+              <FontAwesomeIcon
+                icon={r.icon}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
+              {r.label}
+            </MenuItem>
+          ))}
+
+          {username && (
+            <MenuItem onClick={handleMenuClose}>
+              <FontAwesomeIcon
+                icon={faLock}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />{" "}
+              Logged in as {username}
+            </MenuItem>
+          )}
+          <MenuItem component={Link} to="/" onClick={handleMenuClose}>
+            <FontAwesomeIcon
+              icon={faRightToBracket}
+              className="mr-2"
+              style={{ fontSize: "20px" }}
+            />{" "}
+            Logout
+          </MenuItem>
+        </Menu>
+
+        {/* <Menu
+          anchorEl={anchorEl}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          open={isMenuOpen}
+          onClose={handleMenuClose}
+        >
+          {formattedData?roles.roles.map((item) => {
             const role = item.role.toLowerCase();
             let icon = faUserTie;
             if (role === "ministry-admin") icon = faBuilding;
@@ -189,17 +393,24 @@ const AppBarHeader = ({ handleDrawerToggle }) => {
 
           {mobile && (
             <MenuItem onClick={handleMenuClose}>
-              <FontAwesomeIcon icon={faLock} className="mr-2" style={{ fontSize: "20px" }} />
+              <FontAwesomeIcon
+                icon={faLock}
+                className="mr-2"
+                style={{ fontSize: "20px" }}
+              />
               Logged in as {mobile}
             </MenuItem>
           )}
 
           <MenuItem component={Link} to="/" onClick={handleMenuClose}>
-            <FontAwesomeIcon icon={faRightToBracket} className="mr-2" style={{ fontSize: "20px" }} />
+            <FontAwesomeIcon
+              icon={faRightToBracket}
+              className="mr-2"
+              style={{ fontSize: "20px" }}
+            />
             Logout
           </MenuItem>
-        </Menu>
-
+        </Menu> */}
       </Toolbar>
     </AppBar>
   );

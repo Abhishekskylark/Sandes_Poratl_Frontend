@@ -11,7 +11,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
 import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from "react-redux";
-import {  fetchDesignation, fetchMinistry, fetchOrganization } from "../../redux/authSlice";
+import { createDesignation, deleteDesignation, fetchDesignation, fetchMinistry, fetchOrganization, updateDesignation } from "../../redux/authSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLocation } from 'react-router-dom';
 
@@ -48,7 +48,11 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
         orgVisibility: '',
         publicVisibility: ''
     });
-
+    const [newDesignation, setNewDesignation] = useState({
+        designation_name: '',
+        organization_id: '',
+    });
+console.log("newDesignation",newDesignation);
 
 
     const handlePopoverOpen = (event, rowData) => {
@@ -63,27 +67,21 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
 
     const handleMenuItemClick = (action, rowId) => {
         if (action === 'Edit') {
+            console.log("rowId",rowId);
+            
             if (rowId) {
-                setFormData({
-                    organizationCode: rowId.id || '',
-                    organizationType: rowId.email || '',
-                    organizationName: rowId.name || '',
-                    vhost: rowId.phone || '',
-                    orgVisibility: rowId.city || '',
-                    publicVisibility: rowId.role || '',
+                setNewDesignation({
+                    designation_name: rowId?.designation_name || '',
+                    organization_id: rowId?.organization_id || '',
                 });
             }
             setOpen(true);
         }
         if (action === 'Delete') {
             if (rowId) {
-                setFormData({
-                    organizationCode: rowId.id || '',
-                    organizationType: rowId.email || '',
-                    organizationName: rowId.name || '',
-                    vhost: rowId.phone || '',
-                    orgVisibility: rowId.city || '',
-                    publicVisibility: rowId.role || '',
+               setNewDesignation({
+                    designation_name: rowId?.designation_name || '',
+                    organization_id: rowId?.organization_id || '',
                 });
             }
             setOpenDel(true);
@@ -103,14 +101,22 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     useEffect(() => {
         if (tableData && Ministry.length && Organization?.length) {
             const displayColumns = [
-                { field: 'id', headerName: 'ID', sort: 'asc' },
-                { field: 'ministry_id', headerName: 'Ministry' },
+                { field: 'index', headerName: 'ID', sort: 'asc' },
+                { field: 'ministry_name', headerName: 'Ministry' },
                 { field: 'designation_name', headerName: 'Designation Name' },
-                { field: 'organization_id', headerName: 'Organisation Code' },
+                { field: 'organization_name', headerName: 'Organisation Code' },
                 { field: 'action', headerName: 'Action' }
             ];
+
             const formattedColumns = displayColumns.map(col => {
-                if (col.field === 'organization_id') {
+                if (col.field === 'index') {
+                    return {
+                        ...col,
+                        valueGetter: (params) => params.node.rowIndex + 1, // row number
+                        flex: 0.5,
+                        resizable: true,
+                    };
+                } else if (col.field === 'organization_id') {
                     return {
                         ...col,
                         valueGetter: (params) => {
@@ -157,15 +163,52 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                 }
             });
 
-
             setColumns(formattedColumns);
         }
     }, [tableData, Ministry, Organization]);
+
 
     const formatHeader = (field) => {
         return field
             .replace(/_/g, ' ')
             .replace(/\b\w/g, char => char.toUpperCase());
+    };
+
+    // const dispatch = useDispatch();
+    const { loading, error } = useSelector(state => state.designation);
+
+
+
+    const [updateData, setUpdateData] = useState({
+        designation_name: selectedRowData?.designation_name || '',
+        organization_id: selectedRowData?.organization_id || '',
+    });
+
+    const handleCreateSubmit = (e) => {
+        e.preventDefault();
+        dispatch(createDesignation(newDesignation))
+            .unwrap()
+            .then(() => {
+                setNewDesignation({ designation_name: '', organization_id: '' });
+                toggleDrawerNew(false)();
+            })
+            .catch(err => console.error(err));
+    };
+
+    const handleUpdateSubmit = (e) => {
+        e.preventDefault();
+        dispatch(updateDesignation({ formData: updateData, gu_id: selectedRowData?.gu_id }))
+            .unwrap()
+            .then(() => toggleDrawer(false)())
+            .catch(err => console.error(err));
+    };
+
+    const handleDeleteSubmit = (e) => {
+        e.preventDefault();
+        dispatch(deleteDesignation(selectedRowData?.gu_id))
+            .unwrap()
+            .then(() => toggleDrawerDel(false)())
+            .catch(err => console.error(err));
     };
 
 
@@ -192,27 +235,11 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                         Manage Designation
                     </Typography>
                     <div className="button">
-                        {/* <button
-                            type="button"
-                            className="btn btn-primary mr-3 btn-bg-1"
-                            onClick={() => setShowSelect((prev) => !prev)}
-                        >
-                            Filter
-                        </button> */}
                         <button type="button" className="btn btn-success" onClick={toggleDrawerNew(true)}>
                             + New
                         </button>
                     </div>
                 </div>
-
-                {/* {showSelect && (
-                    <select className="form-select mt-2 mb-3" style={{ width: '300px' }}>
-                        <option value="">Select an option</option>
-                        <option value="1">Option 1</option>
-                        <option value="2">Option 2</option>
-                    </select>
-                )} */}
-
                 <div className="ag-theme-alpine" style={{ height: 539, width: '100%', padding: '10px', borderRadius: '10px' }}>
 
                     <AgGridReact
@@ -229,7 +256,6 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                     />
 
                 </div>
-
 
                 <Popover
                     open={Boolean(anchorEl)}
@@ -253,7 +279,7 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                 </Popover>
             </div>
 
-            <Drawer anchor="top" open={openNew} onClose={toggleDrawerNew(false)}>
+            {/* <Drawer anchor="top" open={openNew} onClose={toggleDrawerNew(false)}>
                 <div className="modal-content mt-14" style={{ padding: "2%" }}>
                     <div className="modal-header">
                         <Typography variant="h5" mb={2} color='#003566' fontWeight="700">Create New Designation</Typography>
@@ -261,7 +287,13 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                     </div>
                     <form>
                         <div className="row">
-                            <div className="col-md-6 mt-3">
+                            <div className="col-md-6">
+                                <select className="form-select">
+                                    <option selected>Organization</option>
+                                    <option value="1">Organization for POC</option>
+                                </select>
+                            </div>
+                            <div className="col-md-6">
                                 <input className="form-control" type="text" placeholder="Designation name" />
                             </div>
                         </div>
@@ -286,9 +318,7 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                         <div className="col-md-6">
                             <select className="form-select">
                                 <option selected>Organization</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
+                                <option value="1">Organization for POC</option>
                             </select>
                         </div>
                         <div className="col-md-6">
@@ -328,6 +358,93 @@ function DesignationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
                     <Box display="flex" mt={3}>
                         <Button variant="contained" style={{ marginRight: "15px" }}>Delete</Button>
                         <Button variant="outlined" onClick={toggleDrawerDel(false)}>Close</Button>
+                    </Box>
+                </Box>
+            </Drawer> */}
+
+            <Drawer anchor="top" open={openNew} onClose={toggleDrawerNew(false)}>
+                <Box component="form" p={4} onSubmit={handleCreateSubmit} sx={{ mt: 14, width: '80%', mx: 'auto' }}>
+                    <Typography variant="h5" mb={2} color='#003566' fontWeight="700">Create New Designation</Typography>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <select
+                                className="form-select"
+                                value={newDesignation.organization_id}
+                                onChange={(e) => setNewDesignation({ ...newDesignation, organization_id: e.target.value })}
+                            >
+                                <option value="">Select Organization</option>
+                                <option value="1">Organization for POC</option>
+                            </select>
+                        </div>
+                        <div className="col-md-6">
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder="Designation name"
+                                value={newDesignation?.designation_name}
+                                onChange={(e) => setNewDesignation({ ...newDesignation, designation_name: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    {error && <Typography color="error">{error}</Typography>}
+                    <Box display="flex" mt={3}>
+                        <Button type="submit" variant="contained" color="success" disabled={loading}>Save</Button>
+                        <Button variant="outlined" onClick={toggleDrawerNew(false)} sx={{ ml: 2 }}>Close</Button>
+                    </Box>
+                </Box>
+            </Drawer>
+
+            {/* UPDATE */}
+            <Drawer anchor="top" open={open} onClose={toggleDrawer(false)}>
+                <Box component="form" p={4} onSubmit={handleUpdateSubmit} sx={{ mt: 14, width: '80%', mx: 'auto' }}>
+                    <Typography variant="h5" mb={5} textAlign="center" color='#003566' fontWeight="700">Update Designation</Typography>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <select
+                                className="form-select"
+                                value={newDesignation.organization_id}
+                                onChange={(e) => setNewDesignation({ ...newDesignation, organization_id: e.target.value })}
+                            >
+                                <option value="">Select Organization</option>
+                                <option value="1">Organization for POC</option>
+                            </select>
+                        </div>
+                        <div className="col-md-6">
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder="Designation name"
+                                value={newDesignation.designation_name}
+                                onChange={(e) => setNewDesignation({ ...newDesignation, designation_name: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    {error && <Typography color="error">{error}</Typography>}
+                    <Box display="flex" mt={3}>
+                        <Button type="submit" variant="contained" color="success" disabled={loading}>Update</Button>
+                        <Button variant="outlined" onClick={toggleDrawer(false)} sx={{ ml: 2 }}>Close</Button>
+                    </Box>
+                </Box>
+            </Drawer>
+
+            {/* DELETE */}
+            <Drawer anchor="top" open={openDel} onClose={toggleDrawerDel(false)}>
+                <Box component="form" p={4} onSubmit={handleDeleteSubmit} sx={{ mt: 14, width: '80%', mx: 'auto' }}>
+                    <Typography variant="h5" mb={5} textAlign="center" color='#003566' fontWeight="700">Delete Designation</Typography>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <label>Designation Name</label>
+                            <input className="form-control" value={newDesignation?.designation_name} readOnly />
+                        </div>
+                        <div className="col-md-6">
+                            <label>Organization</label>
+                            <input className="form-control" value={newDesignation?.organization_id} readOnly />
+                        </div>
+                    </div>
+                    {error && <Typography color="error">{error}</Typography>}
+                    <Box display="flex" mt={3}>
+                        <Button type="submit" variant="contained" color="error" disabled={loading}>Delete</Button>
+                        <Button variant="outlined" onClick={toggleDrawerDel(false)} sx={{ ml: 2 }}>Close</Button>
                     </Box>
                 </Box>
             </Drawer>

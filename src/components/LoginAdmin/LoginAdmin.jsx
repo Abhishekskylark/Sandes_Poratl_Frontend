@@ -9,14 +9,16 @@ export default function LoginAdmin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [mobile, setMobile] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [userAnswer, setUserAnswer] = useState("");
   const [captchaStatus, setCaptchaStatus] = useState("");
   const [captchaColor, setCaptchaColor] = useState("");
   const [captchaVerified, setCaptchaVerified] = useState(false);
 
-  const { captcha, loading: captchaLoading } = useSelector((state) => state.captcha);
+  const { captcha, loading: captchaLoading } = useSelector(
+    (state) => state.captcha
+  );
   const { loading } = useSelector((state) => state.auth);
 
   // Fetch CAPTCHA on mount
@@ -83,17 +85,17 @@ export default function LoginAdmin() {
 
     const roles_id = role ? ROLE_IDS[role.toLowerCase()] : undefined;
 
-    const result = await dispatch(loginAdmin({ mobile, password, roles_id }));
+    const result = await dispatch(loginAdmin({ username, password, roles_id }));
 
     if (loginAdmin.fulfilled.match(result)) {
       const user = result.payload.user;
 
       localStorage.setItem("token", result.payload.token);
-      localStorage.setItem("roleid", user.roleId);
-      localStorage.setItem("role", user.role);
-      localStorage.setItem("mobile", user.username);
-      localStorage.setItem("AllRoles", JSON.stringify(user.allRoles));
-      localStorage.setItem("last_logged_in_role", user.role);
+      // localStorage.setItem("roleid", user.roleId);
+      localStorage.setItem("role", user.roles);
+      localStorage.setItem("username", user.username);
+      localStorage.setItem("AllRoles", user.roles);
+      localStorage.setItem("last_logged_in_role", user.roles);
       localStorage.removeItem("selected_role");
 
       navigate("/Dashboard");
@@ -109,7 +111,9 @@ export default function LoginAdmin() {
   return (
     <div className="min-h-screen w-full px-4 py-8 flex flex-col items-center">
       <div className="w-full max-w-screen-sm mt-8 p-6 bg-white border border-[#168943] shadow-2xl rounded-lg text-center space-y-4">
-        <div style={{ border: "1px solid", padding: "5%", borderRadius: "10px" }}>
+        <div
+          style={{ border: "1px solid", padding: "5%", borderRadius: "10px" }}
+        >
           <div style={{ textAlign: "-webkit-center" }}>
             <img src="assets/images/sandes_logo.png" width="15%" alt="Logo" />
           </div>
@@ -120,11 +124,11 @@ export default function LoginAdmin() {
 
           <TextField
             fullWidth
-            label="Mobile Number"
+            label="User Name"
             variant="outlined"
             margin="normal"
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
 
           <TextField
@@ -176,7 +180,13 @@ export default function LoginAdmin() {
 
             {/* CAPTCHA STATUS */}
             {captchaStatus && (
-              <div style={{ color: captchaColor, marginTop: "4px", textAlign: "left" }}>
+              <div
+                style={{
+                  color: captchaColor,
+                  marginTop: "4px",
+                  textAlign: "left",
+                }}
+              >
                 {captchaStatus}
               </div>
             )}

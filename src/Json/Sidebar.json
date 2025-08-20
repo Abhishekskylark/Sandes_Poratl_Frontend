@@ -1,8 +1,21 @@
 [
     {
-        "role": "super_admin",
+        "role": "ROLE_SUPER_ADMIN",
         "id": 1,
         "permission": [
+            {
+                "Ministry": {
+                    "add_organisation": "active",
+                    "edit": "active",
+                    "organisation_list": "active",
+                    "delete": "active",
+                    "daily_chat_statistics": "active",
+                    "percapita_statistics": "active",
+                    "organization_unit_wise_statistics": "active",
+                    "top/buttom_reports": "active",
+                    "top/buttom_reports_single_page_view": "active"
+                }
+            },
             {
                 "Organization": {
                     "add_organisation": "active",
@@ -73,33 +86,50 @@
             }
         ],
         "module": [
-           
             {
                 "All Module": {
                     "add_modules": "active",
                     "edit": "active",
                     "modules_list": "active",
                     "delete": "active"
-                    
                 }
             }
         ]
     },
     {
-        "role": "ministry_admin",
+        "role": "ROLE_MINISTRY_ADMIN",
         "id": 2,
         "permission": [
-             {
+            {
                 "Organization": {
                     "add_organisation": "active",
                     "edit": "active",
                     "organisation_list": "active",
                     "delete": "active",
-                    "daily_chat_statistics": "inactive",
+                    "daily_chat_statistics": "active",
                     "percapita_statistics": "active",
                     "organization_unit_wise_statistics": "active",
                     "top/buttom_reports": "active",
                     "top/buttom_reports_single_page_view": "active"
+                }
+            },
+            {
+                "Organization Units": {
+                    "add_unit": "active",
+                    "edit": "active",
+                    "unit_list": "active",
+                    "delete": "active",
+                    "send_sandes_message": "active",
+                    "member_wise_status": "active",
+                    "heat_map": "active"
+                }
+            },
+            {
+                "Designations": {
+                    "add_designation": "active",
+                    "edit": "active",
+                    "delete": "active",
+                    "designation_list": "active"
                 }
             },
             {
@@ -108,63 +138,28 @@
                     "edit_member": "active",
                     "member_list": "active",
                     "delete_member": "active",
-                    "view_member_profile": "active"
+                    "view_member_profile": "active",
+                    "member_status_change": "active",
+                    "assign_role_to_member": "active"
+                }
+            },
+            {
+                "Members To be Verified": {
+                    "verify_member": "active",
+                    "reject_member": "active"
+                }
+            },
+            {
+                "Search/Locate Member": {
+                    "search_member": "active"
                 }
             },
             {
                 "Groups": {
                     "add_group": "active",
                     "edit_group": "active",
+                    "delete_group": "active",
                     "group_list": "active"
-                }
-            },
-            {
-                "Designations": {
-                    "add_designation": "active",
-                    "edit_designation": "active",
-                    "designation_list": "active"
-                }
-            }
-        ]
-    },
-     {
-        "role": "o_admin",
-        "id": 3,
-        "permission": [
-             {
-                "Organization": {
-                    "add_organisation": "active",
-                    "edit": "active",
-                    "organisation_list": "active",
-                    "delete": "active",
-                    "daily_chat_statistics": "inactive",
-                    "percapita_statistics": "active",
-                    "organization_unit_wise_statistics": "active",
-                    "top/buttom_reports": "active",
-                    "top/buttom_reports_single_page_view": "active"
-                }
-            },
-            {
-                "Members": {
-                    "add_member": "active",
-                    "edit_member": "active",
-                    "member_list": "active",
-                    "delete_member": "active",
-                    "view_member_profile": "active"
-                }
-            },
-            {
-                "Groups": {
-                    "add_group": "active",
-                    "edit_group": "active",
-                    "group_list": "active"
-                }
-            },
-            {
-                "Designations": {
-                    "add_designation": "active",
-                    "edit_designation": "active",
-                    "designation_list": "active"
                 }
             },
             {
@@ -175,21 +170,27 @@
             }
         ]
     },
-     {
-        "role": "ou_admin",
-        "id": 4,
+    {
+        "role": "ROLE_O_ADMIN",
+        "id": 3,
         "permission": [
-             {
-                "Organization": {
-                    "add_organisation": "active",
+            {
+                "Organization Units": {
+                    "add_unit": "active",
                     "edit": "active",
-                    "organisation_list": "active",
+                    "unit_list": "active",
                     "delete": "active",
-                    "daily_chat_statistics": "inactive",
-                    "percapita_statistics": "active",
-                    "organization_unit_wise_statistics": "active",
-                    "top/buttom_reports": "active",
-                    "top/buttom_reports_single_page_view": "active"
+                    "send_sandes_message": "active",
+                    "member_wise_status": "active",
+                    "heat_map": "active"
+                }
+            },
+            {
+                "Designations": {
+                    "add_designation": "active",
+                    "edit": "active",
+                    "delete": "active",
+                    "designation_list": "active"
                 }
             },
             {
@@ -198,17 +199,86 @@
                     "edit_member": "active",
                     "member_list": "active",
                     "delete_member": "active",
-                    "view_member_profile": "active"
+                    "view_member_profile": "active",
+                    "member_status_change": "active",
+                    "assign_role_to_member": "active"
+                }
+            },
+            {
+                "Members To be Verified": {
+                    "verify_member": "active",
+                    "reject_member": "active"
+                }
+            },
+            {
+                "Search/Locate Member": {
+                    "search_member": "active"
                 }
             },
             {
                 "Groups": {
                     "add_group": "active",
                     "edit_group": "active",
+                    "delete_group": "active",
                     "group_list": "active"
+                }
+            },
+            {
+                "Import Employees": {
+                    "import_employee_data": "active",
+                    "validate_employee_data": "active"
+                }
+            }
+        ]
+    },
+    {
+        "role": "ROLE_OU_ADMIN",
+        "id": 4,
+        "permission": [
+            {
+                "Designations": {
+                    "add_designation": "active",
+                    "edit": "active",
+                    "delete": "active",
+                    "designation_list": "active"
+                }
+            },
+            {
+                "Members": {
+                    "add_member": "active",
+                    "edit_member": "active",
+                    "member_list": "active",
+                    "delete_member": "active",
+                    "view_member_profile": "active",
+                    "member_status_change": "active",
+                    "assign_role_to_member": "active"
+                }
+            },
+            {
+                "Members To be Verified": {
+                    "verify_member": "active",
+                    "reject_member": "active"
+                }
+            },
+            {
+                "Search/Locate Member": {
+                    "search_member": "active"
+                }
+            },
+            {
+                "Groups": {
+                    "add_group": "active",
+                    "edit_group": "active",
+                    "delete_group": "active",
+                    "group_list": "active"
+                }
+            },
+            {
+                "Import Employees": {
+                    "import_employee_data": "active",
+                    "validate_employee_data": "active"
                 }
             }
         ]
     }
-    
 ]

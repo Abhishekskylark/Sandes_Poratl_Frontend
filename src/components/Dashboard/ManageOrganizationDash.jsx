@@ -16,14 +16,14 @@ import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { useDispatch, useSelector } from "react-redux";
-import { fetchOrganization, updateOrganization, fetchMinistry, fetchOrganizationType, deleteOrganization } from "../../redux/authSlice";
+import { fetchOrganization, updateOrganization, fetchMinistry, fetchOrganizationType, deleteOrganization, createOrganization } from "../../redux/authSlice";
 import { toast } from 'react-toastify';
 
 
 function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen }) {
     const location = useLocation();
     const permissionData = location.state?.permissionData;
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
     const organizationState = useSelector((state) => state.organization);
     const ministryState = useSelector((state) => state.ministry);
     const organizationTypeState = useSelector((state) => state.organizationType);
@@ -38,8 +38,18 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
     const [openDel, setOpenDel] = useState(false);
     const [selectedRowData, setSelectedRowData] = useState(null); // Updated
     const [openNew, setOpenNew] = useState(false);
-
-    console.log("MinistryData", MinistryData, tableData);
+    const dispatch = useDispatch();
+    const { loading, error, success } = useSelector(
+        (state) => state.organization
+    );
+    const [formData, setFormData] = useState({
+        organization_code: "",
+        o_name: "",
+        organization_type_id: "",
+        vhost_id: "",
+        org_visibility: "",   // 👈 Added
+        public_visibility: "", // 👈 Added
+    });
 
     useEffect(() => {
         dispatch(fetchOrganization());
@@ -54,34 +64,62 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         }));
     };
 
+    // ------------------ Submit Handler ------------------
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("selectedRowData", selectedRowData);
 
         try {
-            const res = await dispatch(updateOrganization({ formData, rowId: selectedRowData }));
+            let res;
 
-            if (res.meta.requestStatus === 'fulfilled') {
+            if (openEdit) {
+                // 🔹 Update Mode
+                res = await dispatch(updateOrganization({ formData, rowId: selectedRowData })).unwrap();
+
+                toast.success(res?.message || "Organization updated!");
                 setOpenEdit(false);
-                await dispatch(fetchOrganization());
-                toast.success("Organization updated!");
             } else {
-                toast.error("Update failed");
+                // 🔹 Create Mode
+                res = await dispatch(createOrganization(formData)).unwrap();
+
+                toast.success(res?.message || "Organization created!");
+                setOpenNew(false);
             }
+
+            // 🔹 Refresh list after success
+            await dispatch(fetchOrganization());
         } catch (err) {
-            toast.error("Something went wrong");
             console.error(err);
+            toast.error(err?.message || "Something went wrong");
         }
     };
 
-    const [formData, setFormData] = useState({
-        gu_id: '',
-        organizationCode: '',
-        organizationType: '',
-        organizationName: '',
-        vhost_id: '',
-        orgVisibility: '',
-        publicVisibility: ''
-    });
+    // ------------------ Delete Handler ------------------
+    
+    const handleDelete = async (gu_id) => {
+        if (!gu_id) {
+            toast.error("Delete Failed: gu_id not found");
+            return;
+        }
+
+        if (!window.confirm("Are you sure you want to delete this organization?")) return;
+
+        try {
+            const res = await dispatch(deleteOrganization(gu_id)).unwrap();
+
+            if (res?.status === "success") {
+                toast.success(res?.message || "Organization deleted!");
+                setOpenDel(false);
+                await dispatch(fetchOrganization());
+            } else {
+                toast.error(res?.message || "Delete failed");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error(err?.message || "Delete failed");
+        }
+    };
+
 
     const handlePopoverOpen = (event, rowData) => {
         setAnchorEl(event.currentTarget);
@@ -115,7 +153,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         }
         if (action === 'Edit') {
             if (rowId) {
-                console.log("rowId", rowId);
+                setSelectedRowData(rowId);  // 🔹 Yeh line add karo
 
                 setFormData({
                     gu_id: rowId.gu_id || '',
@@ -125,12 +163,11 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
                     vhost_id: rowId.vhost_id || '',
                     orgVisibility: rowId.is_o_visibility == true ? 1 : 0,
                     publicVisibility: rowId.is_public_visibility == true ? 1 : 0,
-
-
                 });
             }
             setOpenEdit(true);
         }
+
         if (action === 'Delete') {
             if (rowId) {
                 const ministry = MinistryData.find(item => item.id === rowId.ministry_id);
@@ -155,13 +192,6 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         handlePopoverClose();
     };
 
-    const handleDelete = (gu_id) => {
-        if (window.confirm("Are you sure you want to delete this organization?")) {
-            console.log("delete this organization", gu_id);
-
-            dispatch(deleteOrganization(gu_id));
-        }
-    };
 
     const toggleDrawer = (open) => () => {
         setOpen(open);
@@ -180,10 +210,10 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
         if (tableData && organizationType.length && MinistryData.length) {
             const displayColumns = [
                 { field: 'id', headerName: 'ID', sort: 'asc' },
-                { field: 'ministry_id', headerName: 'Ministry' },
+                { field: 'ministrycode', headerName: 'Ministry' },
                 { field: 'organization_code', headerName: 'Organisation Code' },
                 { field: 'o_name', headerName: 'O Name' },
-                { field: 'organisation_type_id', headerName: 'Organisation Type' },
+                { field: 'organizationtype', headerName: 'Organisation Type' },
                 { field: 'vhost', headerName: 'Vhost' },
                 { field: 'action', headerName: 'Action' }
             ];
@@ -344,7 +374,7 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
 
                     </div>
                 </div>
-{/* 
+                {/* 
                 {showSelect && (
 
                     <FormControl fullWidth className='mb-3' variant="outlined" style={{ width: '300px' }}>
@@ -470,116 +500,147 @@ function ManageOrganizationDash({ drawerWidth, collapsedDrawerWidth, desktopOpen
             </div>
 
             {/* Drawer for Create */}
+
             <Drawer anchor="top" open={openNew} onClose={toggleDrawerNew(false)}>
                 <Box className="mt-14" sx={{ width: "100%", p: 3 }} role="presentation">
-                    <Typography variant="h5" mb={2} color='#003566' fontWeight="700">
+                    <Typography variant="h5" mb={2} color="#003566" fontWeight="700">
                         Create Organization
                     </Typography>
 
-                    <form>
-                        <Typography variant="h6" color='#003566' mb={2} textAlign="center">
+                    <form onSubmit={handleSubmit}>
+                        <Typography variant="h6" color="#003566" mb={2} textAlign="center">
                             Ministry for POC
                         </Typography>
 
                         <div className="row">
-                            <div className="col-md-6  mt-3">
-                                <TextField label="Organization Code" variant="outlined" fullWidth />
-
+                            <div className="col-md-6 mt-3">
+                                <TextField
+                                    name="organization_code"
+                                    label="Organization Code"
+                                    variant="outlined"
+                                    fullWidth
+                                    value={formData.organization_code}
+                                    onChange={handleChange}
+                                />
                             </div>
-                            <div className="col-md-6  mt-3">
-                                <TextField label="Organization Name" variant="outlined" fullWidth />
-
+                            <div className="col-md-6 mt-3">
+                                <TextField
+                                    name="o_name"
+                                    label="Organization Name"
+                                    variant="outlined"
+                                    fullWidth
+                                    value={formData.o_name}
+                                    onChange={handleChange}
+                                />
                             </div>
 
                             <div className="col-md-6 mt-3">
-
                                 <FormControl variant="outlined" fullWidth>
                                     <InputLabel id="org-type-label">Organization Type</InputLabel>
                                     <Select
                                         labelId="org-type-label"
-                                        defaultValue=""
+                                        name="organization_type_id"
+                                        value={formData.organization_type_id}
+                                        onChange={handleChange}
                                         label="Organization Type"
                                     >
-                                        <MenuItem value="1">Ministry</MenuItem>
-                                        <MenuItem value="2">Department Under Ministry</MenuItem>
-                                        <MenuItem value="3">Attached Office </MenuItem>
-                                        <MenuItem value="4">State Government </MenuItem>
-                                        <MenuItem value="5">State Government Department </MenuItem>
-                                        <MenuItem value="6">Autonomous Bodies </MenuItem>
-                                        <MenuItem value="7">Central Offices </MenuItem>
-                                        <MenuItem value="8">Semi Government Office </MenuItem>
-                                        <MenuItem value="9">Central Public sector Unit </MenuItem>
-                                        <MenuItem value="10">Statutory/Apex Bodies </MenuItem>
-                                        <MenuItem value="11">Section 8 Company </MenuItem>
-                                        <MenuItem value="12">Section 25 Company </MenuItem>
-                                        <MenuItem value="13">Judiciary </MenuItem>
+                                        <MenuItem value="M">Ministry</MenuItem>
+                                        <MenuItem value="D">Department Under Ministry</MenuItem>
+                                        <MenuItem value="A">Attached Office</MenuItem>
+                                        <MenuItem value="S">State Government</MenuItem>
+                                        <MenuItem value="G">State Government Department</MenuItem>
+                                        <MenuItem value="AU">Autonomous Bodies</MenuItem>
+                                        <MenuItem value="CO">Central Offices</MenuItem>
+                                        <MenuItem value="SG">Semi Government Office</MenuItem>
+                                        <MenuItem value="PS">Central Public Sector Unit</MenuItem>
+                                        <MenuItem value="ST">Statutory/Apex Bodies</MenuItem>
+                                        <MenuItem value="C1">Section 8 Company</MenuItem>
+                                        <MenuItem value="C2">Section 25 Company</MenuItem>
+                                        <MenuItem value="J">Judiciary</MenuItem>
 
                                     </Select>
                                 </FormControl>
-
                             </div>
+
                             <div className="col-md-6 mt-3">
                                 <FormControl fullWidth variant="outlined">
                                     <InputLabel id="vhost-label">Vhost</InputLabel>
                                     <Select
                                         labelId="vhost-label"
-                                        defaultValue=""
+                                        name="vhost_id"
+                                        value={formData.vhost_id}
+                                        onChange={handleChange}
                                         label="Vhost"
                                     >
                                         <MenuItem value="1">State Government-North East</MenuItem>
                                         <MenuItem value="2">Defence</MenuItem>
                                         <MenuItem value="3">My Bharat</MenuItem>
-                                        <MenuItem value="1">Judiciary</MenuItem>
-                                        <MenuItem value="2">State Government Western</MenuItem>
-                                        <MenuItem value="3">My Bharat</MenuItem>
-                                        <MenuItem value="1">State Government-North East</MenuItem>
-                                        <MenuItem value="2">Defence</MenuItem>
-                                        <MenuItem value="3">My Bharat</MenuItem>
-                                        <MenuItem value="1">State Government-North East</MenuItem>
-                                        <MenuItem value="2">Defence</MenuItem>
-                                        <MenuItem value="3">My Bharat</MenuItem>
+                                        <MenuItem value="4">Judiciary</MenuItem>
+                                        <MenuItem value="5">State Government Western</MenuItem>
                                     </Select>
                                 </FormControl>
                             </div>
 
+                            {/* 👇 Organization Visibility */}
                             <div className="col-md-6 mt-3">
                                 <FormControl fullWidth variant="outlined">
                                     <InputLabel id="org-vis-label">Organization Visibility</InputLabel>
                                     <Select
                                         labelId="org-vis-label"
-                                        defaultValue=""
+                                        name="org_visibility"
+                                        value={formData.org_visibility}
+                                        onChange={handleChange}
                                         label="Organization Visibility"
                                     >
-                                        <MenuItem value="1">One</MenuItem>
-                                        <MenuItem value="2">Two</MenuItem>
-                                        <MenuItem value="3">Three</MenuItem>
+                                        <MenuItem value="1">Visible</MenuItem>
+                                        <MenuItem value="0">Invisible</MenuItem>
                                     </Select>
                                 </FormControl>
                             </div>
 
+                            {/* 👇 Public Visibility */}
                             <div className="col-md-6 mt-3">
                                 <FormControl fullWidth variant="outlined">
                                     <InputLabel id="public-vis-label">Public Visibility</InputLabel>
                                     <Select
                                         labelId="public-vis-label"
-                                        defaultValue=""
+                                        name="public_visibility"
+                                        value={formData.public_visibility}
+                                        onChange={handleChange}
                                         label="Public Visibility"
                                     >
-                                        <MenuItem value="1">One</MenuItem>
-                                        <MenuItem value="2">Two</MenuItem>
-                                        <MenuItem value="3">Three</MenuItem>
+                                        <MenuItem value="1">Visible</MenuItem>
+                                        <MenuItem value="0">Invisible</MenuItem>
                                     </Select>
                                 </FormControl>
                             </div>
-
-
                         </div>
 
+                        {error && (
+                            <Typography color="error" mt={2}>
+                                {error}
+                            </Typography>
+                        )}
+                        {success && (
+                            <Typography color="green" mt={2}>
+                                {success}
+                            </Typography>
+                        )}
+
                         <Box mt={3} gap={2} display="flex">
-                            <Button variant="contained" color="success" >
-                                Submit
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="success"
+                                disabled={loading}
+                            >
+                                {loading ? "Saving..." : "Submit"}
                             </Button>
-                            <Button variant="outlined" color="error" onClick={toggleDrawer(false)}>
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={toggleDrawerNew(false)}
+                            >
                                 Close
                             </Button>
                         </Box>
